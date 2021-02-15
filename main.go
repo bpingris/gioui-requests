@@ -2,6 +2,7 @@ package main
 
 import (
 	"gioman/routes"
+	"os"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -34,6 +35,8 @@ func main() {
 			select {
 			case e := <-w.Events():
 				switch e := e.(type) {
+				case system.DestroyEvent:
+					os.Exit(0)
 				case system.FrameEvent:
 					gtx := layout.NewContext(&ops, e)
 					appl.Layout(gtx)

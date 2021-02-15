@@ -97,7 +97,7 @@ func (h *Home) Layout(gtx layout.Context) layout.Dimensions {
 	widgets := []layout.Widget{
 		func(gtx layout.Context) layout.Dimensions {
 			ed := material.Editor(h.Router.Th, h.editor, "URL")
-			border := widget.Border{Color: color.NRGBA{A: 255}, CornerRadius: unit.Dp(3), Width: unit.Px(1)}
+			border := widget.Border{Color: color.NRGBA{A: 200}, CornerRadius: unit.Dp(3), Width: unit.Px(1)}
 			return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return layout.UniformInset(unit.Dp(8)).Layout(gtx, ed.Layout)
 			})
@@ -106,7 +106,7 @@ func (h *Home) Layout(gtx layout.Context) layout.Dimensions {
 			return layout.Flex{Spacing: layout.SpaceBetween}.Layout(
 				gtx,
 				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					border := widget.Border{Color: color.NRGBA{A: 255}, CornerRadius: unit.Dp(3), Width: unit.Px(1)}
+					border := widget.Border{Color: color.NRGBA{A: 200}, CornerRadius: unit.Dp(3), Width: unit.Px(1)}
 					return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return layout.UniformInset(unit.Dp(8)).Layout(gtx, material.Editor(h.Router.Th, h.name, "Name of the request").Layout)
 					})
