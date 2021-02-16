@@ -1,4 +1,4 @@
-module gioman
+module giorequests
 
 go 1.15
 
