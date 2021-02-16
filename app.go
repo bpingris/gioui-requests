@@ -1,21 +1,21 @@
 package main
 
 import (
+	"gioman/routes"
 	"gioman/ui"
 
 	"gioui.org/layout"
-	"github.com/BenoitPingris/giorouter"
 )
 
 type App struct {
 	appbar *ui.Appbar
-	router *giorouter.Router
+	home   *routes.Home
 }
 
-func newApp(router *giorouter.Router) *App {
+func newApp(home *routes.Home) *App {
 	return &App{
-		ui.NewAppbar(router, "Requestsss"),
-		router,
+		ui.NewAppbar(home.Th, "Requestsss"),
+		home,
 	}
 }
 
@@ -23,6 +23,6 @@ func (a App) Layout(gtx layout.Context) layout.Dimensions {
 	return layout.Flex{Axis: layout.Vertical}.Layout(
 		gtx,
 		layout.Rigid(a.appbar.Layout),
-		layout.Rigid(a.router.Layout),
+		layout.Rigid(a.home.Layout),
 	)
 }

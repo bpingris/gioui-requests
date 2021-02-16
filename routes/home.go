@@ -12,7 +12,6 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/BenoitPingris/giorouter"
 	gomaterial "github.com/BenoitPingris/go-material-colors"
 )
 
@@ -24,8 +23,7 @@ type Request struct {
 }
 
 type Home struct {
-	Router         *giorouter.Router
-	Appbar         *ui.Appbar
+	Th             *material.Theme
 	send           *widget.Clickable
 	save           *widget.Clickable
 	editor         *widget.Editor
@@ -35,13 +33,12 @@ type Home struct {
 	currentRequest Request
 }
 
-func NewHome(router *giorouter.Router) *Home {
+func NewHome(th *material.Theme) *Home {
 	reqs := []Request{{utils.RandString(16), "JSON Placeholder", "https://jsonplaceholder.typicode.com/todos/1", &widget.Clickable{}},
 		{utils.RandString(16), "Another API", "https://jsonplaceholder.typicode.com/comments/1", &widget.Clickable{}}}
 
 	h := &Home{
-		Router:         router,
-		Appbar:         ui.NewAppbar(router, "Gioman"),
+		Th:             th,
 		send:           &widget.Clickable{},
 		save:           &widget.Clickable{},
 		editor:         &widget.Editor{},
@@ -71,6 +68,8 @@ func (h *Home) makeRequest() {
 
 func (h *Home) DrawRequests() layout.FlexChild {
 	return layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+
+		return layout.Stack{}.Layout(gtx, layout.Expanded(ui.Fill{Color: gomaterial.Grey800}.Layout))
 		return layout.UniformInset(unit.Dp(8)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 			l := layout.List{Axis: layout.Vertical}
 			return l.Layout(gtx, len(h.requests), func(gtx layout.Context, index int) layout.Dimensions {
@@ -79,7 +78,7 @@ func (h *Home) DrawRequests() layout.FlexChild {
 					h.currentRequest = request
 					h.editor.SetText(request.url)
 				}
-				btn := material.Button(h.Router.Th, request.clickable, request.name)
+				btn := material.Button(h.Th, request.clickable, request.name)
 				if h.currentRequest.id != request.id {
 					btn.Background.A = 0
 					btn.Color = gomaterial.Black
@@ -99,7 +98,7 @@ func (h *Home) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	widgets := []layout.Widget{
 		func(gtx layout.Context) layout.Dimensions {
-			ed := material.Editor(h.Router.Th, h.editor, "URL")
+			ed := material.Editor(h.Th, h.editor, "URL")
 			border := widget.Border{Color: color.NRGBA{A: 200}, CornerRadius: unit.Dp(3), Width: unit.Px(1)}
 			return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return layout.UniformInset(unit.Dp(8)).Layout(gtx, ed.Layout)
@@ -111,24 +110,24 @@ func (h *Home) Layout(gtx layout.Context) layout.Dimensions {
 				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 					border := widget.Border{Color: color.NRGBA{A: 200}, CornerRadius: unit.Dp(3), Width: unit.Px(1)}
 					return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-						return layout.UniformInset(unit.Dp(8)).Layout(gtx, material.Editor(h.Router.Th, h.name, "Name of the request").Layout)
+						return layout.UniformInset(unit.Dp(8)).Layout(gtx, material.Editor(h.Th, h.name, "Name of the request").Layout)
 					})
 				}),
 				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 					return layout.Flex{}.Layout(
 						gtx,
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-							return material.Button(h.Router.Th, h.send, "Send").Layout(gtx)
+							return material.Button(h.Th, h.send, "Send").Layout(gtx)
 						}),
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-							return layout.Inset{Left: unit.Dp(16)}.Layout(gtx, material.Button(h.Router.Th, h.save, "Save").Layout)
+							return layout.Inset{Left: unit.Dp(16)}.Layout(gtx, material.Button(h.Th, h.save, "Save").Layout)
 						}),
 					)
 				}),
 			)
 		},
 		func(gtx layout.Context) layout.Dimensions {
-			return material.Body1(h.Router.Th, h.response).Layout(gtx)
+			return material.Body1(h.Th, h.response).Layout(gtx)
 		},
 	}
 	row := layout.Flex{}

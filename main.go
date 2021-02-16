@@ -10,24 +10,16 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/widget/material"
-	"github.com/BenoitPingris/giorouter"
 )
 
 func main() {
 
 	th := material.NewTheme(gofont.Collection())
-	router := giorouter.NewRouter(th)
 
-	home := routes.NewHome(&router)
-	config := routes.NewConfig(&router)
-
-	router.SetRoutes(giorouter.Routes{
-		"home":   home,
-		"config": config,
-	}, "home")
+	home := routes.NewHome(th)
 
 	w := app.NewWindow()
-	appl := newApp(&router)
+	appl := newApp(home)
 	go func() {
 		var ops op.Ops
 
@@ -42,8 +34,6 @@ func main() {
 					appl.Layout(gtx)
 					e.Frame(gtx.Ops)
 				}
-			case <-router.C:
-				w.Invalidate()
 			}
 		}
 	}()

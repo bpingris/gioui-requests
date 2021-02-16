@@ -17,13 +17,13 @@ func argb(c uint32) color.NRGBA {
 	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
 }
 
-type fill struct {
-	color color.NRGBA
+type Fill struct {
+	Color color.NRGBA
 }
 
-func (f fill) Layout(gtx layout.Context) layout.Dimensions {
+func (f Fill) Layout(gtx layout.Context) layout.Dimensions {
 	cs := gtx.Constraints
 	d := cs.Min
-	paint.FillShape(gtx.Ops, f.color, clip.Rect(image.Rectangle{Max: d}).Op())
+	paint.FillShape(gtx.Ops, f.Color, clip.Rect(image.Rectangle{Max: d}).Op())
 	return layout.Dimensions{Size: d, Baseline: d.Y}
 }

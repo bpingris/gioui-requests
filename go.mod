@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	gioui.org v0.0.0-20210215105916-29af250ac674
-	github.com/BenoitPingris/giorouter v1.3.0
+	gioui.org/cmd v0.0.0-20210215105916-29af250ac674 // indirect
 	github.com/BenoitPingris/go-material-colors v1.2.0
 	golang.org/x/exp v0.0.0-20210212053707-62dc52270d37
 	golang.org/x/image v0.0.0-20210215062227-55ae14f3ebb2 // indirect
