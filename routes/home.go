@@ -54,16 +54,19 @@ func NewHome(router *giorouter.Router) *Home {
 	return h
 }
 
-func makeRequest(url string) string {
-	res, err := http.Get(url)
-	if err != nil {
-		return "An error occured: \n" + err.Error()
-	}
-	responseData, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(responseData)
+func (h *Home) makeRequest() {
+	url := h.editor.Text()
+	go func() {
+		res, err := http.Get(url)
+		if err != nil {
+			h.response = "An error occured: \n" + err.Error()
+		}
+		responseData, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		h.response = string(responseData)
+	}()
 }
 
 func (h *Home) DrawRequests() layout.FlexChild {
@@ -92,7 +95,7 @@ func (h *Home) Layout(gtx layout.Context) layout.Dimensions {
 		h.requests = append(h.requests, Request{utils.RandString(16), h.name.Text(), h.currentRequest.url, &widget.Clickable{}})
 	}
 	if h.send.Clicked() {
-		h.response = makeRequest(h.editor.Text())
+		h.makeRequest()
 	}
 	widgets := []layout.Widget{
 		func(gtx layout.Context) layout.Dimensions {
