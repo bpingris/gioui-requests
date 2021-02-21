@@ -2,6 +2,7 @@ package ui
 
 import (
 	"gioui.org/layout"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	gomaterial "github.com/BenoitPingris/go-material-colors"
@@ -34,18 +35,19 @@ func NewAppbar(th *material.Theme, title string) *Appbar {
 }
 
 func (a *Appbar) Layout(gtx layout.Context) layout.Dimensions {
+	textLayout := func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
+			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+				text := material.Body1(a.Th, a.Title)
+				text.Color = gomaterial.White
+				return text.Layout(gtx)
+			}),
+		)
+	}
 	return layout.Stack{Alignment: layout.NW}.Layout(gtx,
 		layout.Expanded(Fill{gomaterial.Grey800}.Layout),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			return Padding(gtx, 16, func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-					layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-						text := material.Body1(a.Th, a.Title)
-						text.Color = gomaterial.White
-						return text.Layout(gtx)
-					}),
-				)
-			})
+			return layout.UniformInset(unit.Dp(16)).Layout(gtx, textLayout)
 		}),
 	)
 }
