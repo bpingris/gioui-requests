@@ -35,19 +35,14 @@ func NewAppbar(th *material.Theme, title string) *Appbar {
 }
 
 func (a *Appbar) Layout(gtx layout.Context) layout.Dimensions {
-	textLayout := func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-				text := material.Body1(a.Th, a.Title)
-				text.Color = gomaterial.White
-				return text.Layout(gtx)
-			}),
-		)
-	}
+	min := gtx.Constraints.Min
 	return layout.Stack{Alignment: layout.NW}.Layout(gtx,
 		layout.Expanded(Fill{gomaterial.Grey800}.Layout),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			return layout.UniformInset(unit.Dp(16)).Layout(gtx, textLayout)
+			gtx.Constraints.Min = min
+			text := material.Body1(a.Th, a.Title)
+			text.Color = gomaterial.White
+			return layout.UniformInset(unit.Dp(16)).Layout(gtx, text.Layout)
 		}),
 	)
 }
