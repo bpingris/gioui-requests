@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"gioman/ui"
-	"gioman/utils"
+	"giorequests/ui"
+	"giorequests/utils"
 	"image/color"
 	"io/ioutil"
 	"log"
