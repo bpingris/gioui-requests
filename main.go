@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gioman/routes"
+	"giorequests/routes"
 	"os"
 
 	"gioui.org/app"

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gioman/routes"
-	"gioman/ui"
+	"giorequests/routes"
+	"giorequests/ui"
 
 	"gioui.org/layout"
 )
