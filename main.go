@@ -2,7 +2,9 @@ package main
 
 import (
 	"giorequests/routes"
+	"math/rand"
 	"os"
+	"time"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -13,6 +15,7 @@ import (
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 
 	th := material.NewTheme(gofont.Collection())
 
