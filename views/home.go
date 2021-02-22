@@ -23,6 +23,12 @@ type HomeStyle struct {
 	fetchStyle, saveStyle material.ButtonStyle
 }
 
+// TODO change the awesome names
+type Requests struct {
+	ReqList state.Requests
+	Current state.Request
+}
+
 func Home(th *material.Theme, url, name *widget.Editor, fetch, save *widget.Clickable) HomeStyle {
 	return HomeStyle{
 		loader: material.Loader(th),
@@ -39,12 +45,12 @@ func Home(th *material.Theme, url, name *widget.Editor, fetch, save *widget.Clic
 	}
 }
 
-func (h HomeStyle) Layout(gtx layout.Context, r state.Requests, current state.Request, fetching bool, response string) layout.Dimensions {
+func (h HomeStyle) Layout(gtx layout.Context, r Requests, fetching bool, response string) layout.Dimensions {
 	homeLayout := func(gtx layout.Context) layout.Dimensions {
 		if fetching {
 			gtx = gtx.Disabled()
 		}
-		return h.layout(gtx, r, current, response)
+		return h.layout(gtx, r.ReqList, r.Current, response)
 	}
 	if !fetching {
 		return homeLayout(gtx)

@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"sandbox/state"
 
 	"gioui.org/layout"
@@ -19,6 +20,7 @@ type requestStorage interface {
 type HomeScreenStyle struct {
 	url, name         *widget.Editor
 	fetchBtn, saveBtn *widget.Clickable
+	itemsBtn          []*widget.Clickable
 	home              HomeStyle
 	fetch             func(url string)
 	reqStor           requestStorage
@@ -29,11 +31,16 @@ func HomeScreen(th *material.Theme, fetch func(url string), rs requestStorage) H
 	name := new(widget.Editor)
 	fetchBtn := new(widget.Clickable)
 	saveBtn := new(widget.Clickable)
+	var itemsBtn []*widget.Clickable
+	for range rs.All() {
+		itemsBtn = append(itemsBtn, new(widget.Clickable))
+	}
 	return HomeScreenStyle{
 		url:      url,
 		name:     name,
 		fetchBtn: fetchBtn,
 		saveBtn:  saveBtn,
+		itemsBtn: itemsBtn,
 		home:     Home(th, url, name, fetchBtn, saveBtn),
 		fetch:    fetch,
 		reqStor:  rs,
@@ -51,5 +58,10 @@ func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response stri
 			Name:   h.name.Text(),
 		})
 	}
-	return h.home.Layout(gtx, h.reqStor.All(), h.reqStor.Current(), fetching, response)
+	for _, i := range h.itemsBtn {
+		if i.Clicked() {
+			fmt.Println("clicked")
+		}
+	}
+	return h.home.Layout(gtx, Requests{ReqList: h.reqStor.All(), Current: h.reqStor.Current()}, fetching, response)
 }
