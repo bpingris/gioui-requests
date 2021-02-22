@@ -39,12 +39,12 @@ func Home(th *material.Theme, url, name *widget.Editor, fetch, save *widget.Clic
 	}
 }
 
-func (h HomeStyle) Layout(gtx layout.Context, r state.Requests, fetching bool, response string) layout.Dimensions {
+func (h HomeStyle) Layout(gtx layout.Context, r state.Requests, current state.Request, fetching bool, response string) layout.Dimensions {
 	homeLayout := func(gtx layout.Context) layout.Dimensions {
 		if fetching {
 			gtx = gtx.Disabled()
 		}
-		return h.layout(gtx, r, response)
+		return h.layout(gtx, r, current, response)
 	}
 	if !fetching {
 		return homeLayout(gtx)
@@ -59,7 +59,8 @@ func (h HomeStyle) Layout(gtx layout.Context, r state.Requests, fetching bool, r
 	)
 }
 
-func (h HomeStyle) layout(gtx layout.Context, r state.Requests, response string) layout.Dimensions {
+func (h HomeStyle) layout(gtx layout.Context, r state.Requests, current state.Request, response string) layout.Dimensions {
+
 	methods := func(gtx layout.Context) layout.Dimensions {
 		list := layout.List{Axis: layout.Vertical}
 		return list.Layout(gtx, len(r), func(gtx layout.Context, index int) layout.Dimensions {
@@ -75,6 +76,8 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, response string)
 		}
 	}
 	inputs := func(gtx layout.Context) layout.Dimensions {
+		h.urlInp.Editor.Editor.SetText(current.URL)
+		h.nameInp.Editor.Editor.SetText(current.Name)
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(inset(h.urlInp.Layout)),
 			layout.Rigid(inset(h.nameInp.Layout)),

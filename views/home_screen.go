@@ -13,6 +13,7 @@ import (
 type requestStorage interface {
 	All() state.Requests
 	Save(state.Request)
+	Current() state.Request
 }
 
 type HomeScreenStyle struct {
@@ -50,5 +51,5 @@ func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response stri
 			Name:   h.name.Text(),
 		})
 	}
-	return h.home.Layout(gtx, h.reqStor.All(), fetching, response)
+	return h.home.Layout(gtx, h.reqStor.All(), h.reqStor.Current(), fetching, response)
 }
