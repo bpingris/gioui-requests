@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sandbox/state"
 	"sandbox/ui"
+	"strings"
 
 	"gioui.org/layout"
 	"gioui.org/unit"
@@ -15,7 +16,7 @@ type HomeStyle struct {
 	loader material.LoaderStyle
 	lbl    material.LabelStyle
 
-	name            *widget.Editor
+	url, name       *widget.Editor
 	urlInp, nameInp ui.InputStyle
 
 	save                  *widget.Clickable
@@ -29,6 +30,7 @@ func Home(th *material.Theme, url *widget.Editor, fetch *widget.Clickable) HomeS
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),
 
+		url:     url,
 		name:    name,
 		urlInp:  ui.Input(th, url, "URL"),
 		nameInp: ui.Input(th, name, "Name"),
@@ -80,10 +82,18 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, response string)
 			layout.Rigid(inset(h.nameInp.Layout)),
 		)
 	}
+	enableIf := func(w layout.Widget, enable bool) layout.Widget {
+		return func(gtx layout.Context) layout.Dimensions {
+			if !enable {
+				gtx = gtx.Disabled()
+			}
+			return w(gtx)
+		}
+	}
 	buttons := func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
-			layout.Rigid(inset(h.fetchStyle.Layout)),
-			layout.Rigid(inset(h.saveStyle.Layout)),
+			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), len(strings.TrimSpace(h.url.Text())) > 0)),
+			layout.Rigid(enableIf(inset(h.saveStyle.Layout), len(strings.TrimSpace(h.name.Text())) > 0)),
 		)
 	}
 	// TODO: May require different style, in which case move it to the constructor.
