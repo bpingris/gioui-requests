@@ -15,7 +15,6 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/unit"
-	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
@@ -39,14 +38,9 @@ func loop(w *app.Window) error {
 		state.Request{Method: state.POST, URL: "https://typicode.jsonplaceholder.com/comments/1", Name: "/comments"},
 	}
 
-	// TODO: This should be moved to a different widget, since now it's a new
-	// state, and we don't wanna care about it in the main loop.
-	var (
-		url      widget.Editor
-		fetchBtn widget.Clickable
-	)
-	home := views.Home(th, &url, &fetchBtn)
 	response := "Last response N/A"
+
+	home := views.HomeScreen(th, requests, fetch)
 
 	var ops op.Ops
 	for {
@@ -57,11 +51,8 @@ func loop(w *app.Window) error {
 				return e.Err
 			case system.FrameEvent:
 				gtx := layout.NewContext(&ops, e)
-				if fetchBtn.Clicked() {
-					fetch(url.Text())
-				}
 				fetching := fetchResponse != nil
-				home.Layout(gtx, requests, fetching, response)
+				home.Layout(gtx, fetching, response)
 				e.Frame(gtx.Ops)
 			}
 		case response = <-fetchResponse:
