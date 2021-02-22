@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
+	"sandbox/services"
 	"sandbox/state"
 	"sandbox/views"
 	"time"
@@ -20,13 +20,13 @@ import (
 
 func loop(w *app.Window) error {
 	var (
-		fetcher       fetcher
+		fetcher       services.Fetcher
 		fetchResponse chan string
 	)
 	fetch := func(url string) {
 		fetchResponse = make(chan string, 1)
 		go func() {
-			fetchResponse <- fetcher.fetch(state.Request{URL: url})
+			fetchResponse <- fetcher.Fetch(state.Request{URL: url})
 		}()
 	}
 
@@ -70,20 +70,6 @@ func main() {
 		os.Exit(0)
 	}()
 	app.Main()
-}
-
-type fetcher struct {
-	cnt uint64
-}
-
-func (f *fetcher) fetch(r state.Request) string {
-	log.Printf("Fetching %v", r)
-	f.cnt++
-	// Emulate fetching: 500-1500ms delay.
-	time.Sleep(time.Millisecond * time.Duration(500+rand.Intn(1000)))
-	resp := fmt.Sprintf("Response #%d", f.cnt)
-	log.Printf("Fetched %d bytes", len([]byte(resp)))
-	return resp
 }
 
 // requestStorage and requestProviderAdaptor exist for demonstration purpose.
