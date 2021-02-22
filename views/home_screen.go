@@ -9,28 +9,39 @@ import (
 )
 
 type HomeScreenStyle struct {
-	url      *widget.Editor
-	fetchBtn *widget.Clickable
-	home     HomeStyle
-	requests state.Requests
-	fetch    func(url string)
+	url, name         *widget.Editor
+	fetchBtn, saveBtn *widget.Clickable
+	home              HomeStyle
+	fetch             func(url string)
+	save              func(state.Request)
 }
 
-func HomeScreen(th *material.Theme, r state.Requests, fetch func(url string)) HomeScreenStyle {
+func HomeScreen(th *material.Theme, fetch func(url string), save func(state.Request)) HomeScreenStyle {
 	url := new(widget.Editor)
+	name := new(widget.Editor)
 	fetchBtn := new(widget.Clickable)
+	saveBtn := new(widget.Clickable)
 	return HomeScreenStyle{
 		url:      url,
+		name:     name,
 		fetchBtn: fetchBtn,
-		home:     Home(th, url, fetchBtn),
-		requests: r,
+		saveBtn:  saveBtn,
+		home:     Home(th, url, name, fetchBtn, saveBtn),
 		fetch:    fetch,
+		save:     save,
 	}
 }
 
-func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
+func (h HomeScreenStyle) Layout(gtx layout.Context, r state.Requests, fetching bool, response string) layout.Dimensions {
 	if h.fetchBtn.Clicked() {
 		h.fetch(h.url.Text())
 	}
-	return h.home.Layout(gtx, h.requests, fetching, response)
+	if h.saveBtn.Clicked() {
+		h.save(state.Request{
+			Method: state.GET, // TODO: Change this.
+			URL:    h.url.Text(),
+			Name:   h.name.Text(),
+		})
+	}
+	return h.home.Layout(gtx, r, fetching, response)
 }

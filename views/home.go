@@ -23,9 +23,7 @@ type HomeStyle struct {
 	fetchStyle, saveStyle material.ButtonStyle
 }
 
-func Home(th *material.Theme, url *widget.Editor, fetch *widget.Clickable) HomeStyle {
-	name := new(widget.Editor)
-	save := new(widget.Clickable)
+func Home(th *material.Theme, url, name *widget.Editor, fetch, save *widget.Clickable) HomeStyle {
 	return HomeStyle{
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),

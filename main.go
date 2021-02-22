@@ -37,10 +37,11 @@ func loop(w *app.Window) error {
 		state.Request{Method: state.GET, URL: "https://typicode.jsonplaceholder.com/todos/1", Name: "jsonplaceholder"},
 		state.Request{Method: state.POST, URL: "https://typicode.jsonplaceholder.com/comments/1", Name: "/comments"},
 	}
+	save := func(r state.Request) { requests = append(requests, r) }
 
 	response := "Last response N/A"
 
-	home := views.HomeScreen(th, requests, fetch)
+	home := views.HomeScreen(th, fetch, save)
 
 	var ops op.Ops
 	for {
@@ -52,7 +53,7 @@ func loop(w *app.Window) error {
 			case system.FrameEvent:
 				gtx := layout.NewContext(&ops, e)
 				fetching := fetchResponse != nil
-				home.Layout(gtx, fetching, response)
+				home.Layout(gtx, requests, fetching, response)
 				e.Frame(gtx.Ops)
 			}
 		case response = <-fetchResponse:
