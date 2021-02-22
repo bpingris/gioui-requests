@@ -23,4 +23,5 @@ type Request struct {
 	URL    string
 	Name   string
 }
+
 type Requests []Request

@@ -1,8 +1,10 @@
 package views
 
 import (
+	"fmt"
 	"sandbox/state"
 	"sandbox/ui"
+	"strings"
 
 	"gioui.org/layout"
 	"gioui.org/unit"
@@ -10,52 +12,100 @@ import (
 	"gioui.org/widget/material"
 )
 
-type Home struct {
-	url  widget.Editor
-	name widget.Editor
-	s    *state.State
+type HomeStyle struct {
+	loader material.LoaderStyle
+	lbl    material.LabelStyle
+
+	url, name       *widget.Editor
+	urlInp, nameInp ui.InputStyle
+
+	save                  *widget.Clickable
+	fetchStyle, saveStyle material.ButtonStyle
 }
 
-func NewHome(s *state.State) *Home {
-	return &Home{
-		s: s,
+func Home(th *material.Theme, url, name *widget.Editor, fetch, save *widget.Clickable) HomeStyle {
+	return HomeStyle{
+		loader: material.Loader(th),
+		lbl:    material.Body1(th, ""),
+
+		url:     url,
+		name:    name,
+		urlInp:  ui.Input(th, url, "URL"),
+		nameInp: ui.Input(th, name, "Name"),
+
+		save:       save,
+		fetchStyle: material.Button(th, fetch, "Fetch"),
+		saveStyle:  material.Button(th, save, "Save"),
 	}
 }
 
-func (h *Home) Layout() layout.Dimensions {
-	list := layout.List{Axis: layout.Vertical}
-	s := h.s
-	r := s.MustGet("requests").(state.Requests)
+func (h HomeStyle) Layout(gtx layout.Context, r state.Requests, fetching bool, response string) layout.Dimensions {
+	homeLayout := func(gtx layout.Context) layout.Dimensions {
+		if fetching {
+			gtx = gtx.Disabled()
+		}
+		return h.layout(gtx, r, response)
+	}
+	if !fetching {
+		return homeLayout(gtx)
+	}
+	min := gtx.Constraints.Min
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(homeLayout),
+		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min = min
+			return layout.Center.Layout(gtx, h.loader.Layout)
+		}),
+	)
+}
 
-	return layout.Flex{}.Layout(
-		s.Gtx,
-		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-			return list.Layout(
-				gtx,
-				len(r),
-				func(gtx layout.Context, index int) layout.Dimensions {
-					return layout.Flex{Alignment: layout.Middle}.Layout(
-						gtx,
-						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-							return material.Body1(s.Th, r[index].Method.String()+" "+r[index].Name).Layout(gtx)
-						}),
-					)
-				},
+func (h HomeStyle) layout(gtx layout.Context, r state.Requests, response string) layout.Dimensions {
+	methods := func(gtx layout.Context) layout.Dimensions {
+		list := layout.List{Axis: layout.Vertical}
+		return list.Layout(gtx, len(r), func(gtx layout.Context, index int) layout.Dimensions {
+			h.lbl.Text = fmt.Sprintf("%s %s", r[index].Method, r[index].Name)
+			return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
+				layout.Rigid(h.lbl.Layout),
 			)
-		}),
-		layout.Flexed(2, func(gtx layout.Context) layout.Dimensions {
-			return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return layout.UniformInset(unit.Dp(4)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-						return ui.Input(gtx, s.Th, &h.url, "URL")
-					})
-				}),
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return layout.UniformInset(unit.Dp(4)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-						return ui.Input(gtx, s.Th, &h.name, "Name")
-					})
-				}),
-			)
-		}),
+		})
+	}
+	inset := func(w layout.Widget) layout.Widget {
+		return func(gtx layout.Context) layout.Dimensions {
+			return layout.UniformInset(unit.Dp(4)).Layout(gtx, w)
+		}
+	}
+	inputs := func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+			layout.Rigid(inset(h.urlInp.Layout)),
+			layout.Rigid(inset(h.nameInp.Layout)),
+		)
+	}
+	enableIf := func(w layout.Widget, enable bool) layout.Widget {
+		return func(gtx layout.Context) layout.Dimensions {
+			if !enable {
+				gtx = gtx.Disabled()
+			}
+			return w(gtx)
+		}
+	}
+	buttons := func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceStart}.Layout(gtx,
+			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), len(strings.TrimSpace(h.url.Text())) > 0)),
+			layout.Rigid(enableIf(inset(h.saveStyle.Layout), len(strings.TrimSpace(h.name.Text())) > 0)),
+		)
+	}
+	// TODO: May require different style, in which case move it to the constructor.
+	resp := h.lbl
+	resp.Text = response
+	controls := func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+			layout.Rigid(inputs),
+			layout.Rigid(buttons),
+			layout.Rigid(inset(resp.Layout)),
+		)
+	}
+	return layout.Flex{}.Layout(gtx,
+		layout.Flexed(1, methods),
+		layout.Flexed(2, controls),
 	)
 }
