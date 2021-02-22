@@ -20,10 +20,10 @@ type HomeScreenStyle struct {
 	fetchBtn, saveBtn *widget.Clickable
 	home              HomeStyle
 	fetch             func(url string)
-	reqProv           requestStorage
+	reqStor           requestStorage
 }
 
-func HomeScreen(th *material.Theme, fetch func(url string), rp requestStorage) HomeScreenStyle {
+func HomeScreen(th *material.Theme, fetch func(url string), rs requestStorage) HomeScreenStyle {
 	url := new(widget.Editor)
 	name := new(widget.Editor)
 	fetchBtn := new(widget.Clickable)
@@ -35,7 +35,7 @@ func HomeScreen(th *material.Theme, fetch func(url string), rp requestStorage) H
 		saveBtn:  saveBtn,
 		home:     Home(th, url, name, fetchBtn, saveBtn),
 		fetch:    fetch,
-		reqProv:  rp,
+		reqStor:  rs,
 	}
 }
 
@@ -44,11 +44,11 @@ func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response stri
 		h.fetch(h.url.Text())
 	}
 	if h.saveBtn.Clicked() {
-		h.reqProv.Save(state.Request{
+		h.reqStor.Save(state.Request{
 			Method: state.GET, // TODO: Change this.
 			URL:    h.url.Text(),
 			Name:   h.name.Text(),
 		})
 	}
-	return h.home.Layout(gtx, h.reqProv.All(), fetching, response)
+	return h.home.Layout(gtx, h.reqStor.All(), fetching, response)
 }
