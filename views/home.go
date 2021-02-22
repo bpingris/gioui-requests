@@ -89,7 +89,7 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, response string)
 		}
 	}
 	buttons := func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+		return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceStart}.Layout(gtx,
 			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), len(strings.TrimSpace(h.url.Text())) > 0)),
 			layout.Rigid(enableIf(inset(h.saveStyle.Layout), len(strings.TrimSpace(h.name.Text())) > 0)),
 		)
