@@ -29,19 +29,19 @@ type Requests struct {
 	Current state.Request
 }
 
-func Home(th *material.Theme, url, name *widget.Editor, fetch, save *widget.Clickable) HomeStyle {
+func Home(th *material.Theme, widgets HomeScreenWidgets) HomeStyle {
 	return HomeStyle{
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),
 
-		url:     url,
-		name:    name,
-		urlInp:  ui.Input(th, url, "URL"),
-		nameInp: ui.Input(th, name, "Name"),
+		url:     widgets.url,
+		name:    widgets.name,
+		urlInp:  ui.Input(th, widgets.url, "URL"),
+		nameInp: ui.Input(th, widgets.name, "Name"),
 
-		save:       save,
-		fetchStyle: material.Button(th, fetch, "Fetch"),
-		saveStyle:  material.Button(th, save, "Save"),
+		save:       widgets.saveBtn,
+		fetchStyle: material.Button(th, widgets.fetchBtn, "Fetch"),
+		saveStyle:  material.Button(th, widgets.saveBtn, "Save"),
 	}
 }
 

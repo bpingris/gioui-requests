@@ -17,13 +17,17 @@ type requestStorage interface {
 	Current() state.Request
 }
 
-type HomeScreenStyle struct {
+type HomeScreenWidgets struct {
 	url, name         *widget.Editor
 	fetchBtn, saveBtn *widget.Clickable
 	itemsBtn          []*widget.Clickable
-	home              HomeStyle
-	fetch             func(url string)
-	reqStor           requestStorage
+}
+
+type HomeScreenStyle struct {
+	widgets HomeScreenWidgets
+	home    HomeStyle
+	fetch   func(url string)
+	reqStor requestStorage
 }
 
 func HomeScreen(th *material.Theme, fetch func(url string), rs requestStorage) HomeScreenStyle {
@@ -35,30 +39,33 @@ func HomeScreen(th *material.Theme, fetch func(url string), rs requestStorage) H
 	for range rs.All() {
 		itemsBtn = append(itemsBtn, new(widget.Clickable))
 	}
-	return HomeScreenStyle{
+	widgets := HomeScreenWidgets{
 		url:      url,
 		name:     name,
 		fetchBtn: fetchBtn,
 		saveBtn:  saveBtn,
 		itemsBtn: itemsBtn,
-		home:     Home(th, url, name, fetchBtn, saveBtn),
-		fetch:    fetch,
-		reqStor:  rs,
+	}
+	return HomeScreenStyle{
+		widgets: widgets,
+		home:    Home(th, widgets),
+		fetch:   fetch,
+		reqStor: rs,
 	}
 }
 
 func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
-	if h.fetchBtn.Clicked() {
-		h.fetch(h.url.Text())
+	if h.widgets.fetchBtn.Clicked() {
+		h.fetch(h.widgets.url.Text())
 	}
-	if h.saveBtn.Clicked() {
+	if h.widgets.saveBtn.Clicked() {
 		h.reqStor.Save(state.Request{
 			Method: state.GET, // TODO: Change this.
-			URL:    h.url.Text(),
-			Name:   h.name.Text(),
+			URL:    h.widgets.url.Text(),
+			Name:   h.widgets.name.Text(),
 		})
 	}
-	for _, i := range h.itemsBtn {
+	for _, i := range h.widgets.itemsBtn {
 		if i.Clicked() {
 			fmt.Println("clicked")
 		}
