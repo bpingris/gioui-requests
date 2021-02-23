@@ -32,8 +32,8 @@ type Requests struct {
 	Current state.Request
 }
 
-func Home(th *material.Theme, widgets HomeScreenWidgets) *HomeStyle {
-	return &HomeStyle{
+func Home(th *material.Theme, widgets HomeScreenWidgets) HomeStyle {
+	return HomeStyle{
 		th:     th,
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),

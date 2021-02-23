@@ -25,7 +25,7 @@ type HomeScreenWidgets struct {
 
 type HomeScreenStyle struct {
 	widgets HomeScreenWidgets
-	home    *HomeStyle
+	home    HomeStyle
 	fetch   func(url string)
 	reqStor requestStorage
 }
