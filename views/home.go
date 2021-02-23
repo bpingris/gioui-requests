@@ -8,22 +8,19 @@ import (
 
 	"gioui.org/layout"
 	"gioui.org/unit"
-	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
 type HomeStyle struct {
+	widgets *HomeScreenWidgets
+
 	th     *material.Theme
 	loader material.LoaderStyle
 	lbl    material.LabelStyle
 
-	url, name       *widget.Editor
 	urlInp, nameInp ui.InputStyle
 
-	save                  *widget.Clickable
 	fetchStyle, saveStyle material.ButtonStyle
-
-	reqs *[]*widget.Clickable
 }
 
 // TODO change the awesome names
@@ -32,22 +29,19 @@ type Requests struct {
 	Current state.Request
 }
 
-func Home(th *material.Theme, widgets HomeScreenWidgets) HomeStyle {
+func Home(th *material.Theme, widgets *HomeScreenWidgets) HomeStyle {
 	return HomeStyle{
 		th:     th,
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),
 
-		url:     widgets.url,
-		name:    widgets.name,
-		urlInp:  ui.Input(th, widgets.url, "URL"),
-		nameInp: ui.Input(th, widgets.name, "Name"),
+		widgets: widgets,
 
-		save:       widgets.saveBtn,
-		fetchStyle: material.Button(th, widgets.fetchBtn, "Fetch"),
-		saveStyle:  material.Button(th, widgets.saveBtn, "Save"),
+		urlInp:  ui.Input(th, &widgets.url, "URL"),
+		nameInp: ui.Input(th, &widgets.name, "Name"),
 
-		reqs: widgets.itemsBtn,
+		fetchStyle: material.Button(th, &widgets.fetchBtn, "Fetch"),
+		saveStyle:  material.Button(th, &widgets.saveBtn, "Save"),
 	}
 }
 
@@ -78,7 +72,7 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, current state.Re
 		return list.Layout(gtx, len(r), func(gtx layout.Context, index int) layout.Dimensions {
 			label := fmt.Sprintf("%s %s", r[index].Method, r[index].Name)
 			return layout.UniformInset(unit.Dp(4)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return material.Button(h.th, (*h.reqs)[index], label).Layout(gtx)
+				return material.Button(h.th, &h.widgets.itemsBtn[index], label).Layout(gtx)
 			})
 		})
 	}
@@ -103,8 +97,8 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, current state.Re
 	}
 	buttons := func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceStart}.Layout(gtx,
-			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), len(strings.TrimSpace(h.url.Text())) > 0)),
-			layout.Rigid(enableIf(inset(h.saveStyle.Layout), len(strings.TrimSpace(h.name.Text())) > 0)),
+			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), len(strings.TrimSpace(h.widgets.url.Text())) > 0)),
+			layout.Rigid(enableIf(inset(h.saveStyle.Layout), len(strings.TrimSpace(h.widgets.name.Text())) > 0)),
 		)
 	}
 	// TODO: May require different style, in which case move it to the constructor.
