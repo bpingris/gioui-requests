@@ -23,7 +23,7 @@ type HomeStyle struct {
 	save                  *widget.Clickable
 	fetchStyle, saveStyle material.ButtonStyle
 
-	reqs []*widget.Clickable
+	reqs *[]*widget.Clickable
 }
 
 // TODO change the awesome names
@@ -32,8 +32,8 @@ type Requests struct {
 	Current state.Request
 }
 
-func Home(th *material.Theme, widgets HomeScreenWidgets) HomeStyle {
-	return HomeStyle{
+func Home(th *material.Theme, widgets HomeScreenWidgets) *HomeStyle {
+	return &HomeStyle{
 		th:     th,
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),
@@ -78,7 +78,7 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, current state.Re
 		return list.Layout(gtx, len(r), func(gtx layout.Context, index int) layout.Dimensions {
 			label := fmt.Sprintf("%s %s", r[index].Method, r[index].Name)
 			return layout.UniformInset(unit.Dp(4)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return material.Button(h.th, h.reqs[index], label).Layout(gtx)
+				return material.Button(h.th, (*h.reqs)[index], label).Layout(gtx)
 			})
 		})
 	}

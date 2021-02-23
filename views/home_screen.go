@@ -20,12 +20,12 @@ type requestStorage interface {
 type HomeScreenWidgets struct {
 	url, name         *widget.Editor
 	fetchBtn, saveBtn *widget.Clickable
-	itemsBtn          []*widget.Clickable
+	itemsBtn          *[]*widget.Clickable
 }
 
 type HomeScreenStyle struct {
 	widgets HomeScreenWidgets
-	home    HomeStyle
+	home    *HomeStyle
 	fetch   func(url string)
 	reqStor requestStorage
 }
@@ -46,7 +46,7 @@ func HomeScreen(th *material.Theme, fetch func(url string), rs requestStorage) H
 		name:     name,
 		fetchBtn: fetchBtn,
 		saveBtn:  saveBtn,
-		itemsBtn: itemsBtn,
+		itemsBtn: &itemsBtn,
 	}
 	return HomeScreenStyle{
 		widgets: widgets,
@@ -61,13 +61,14 @@ func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response stri
 		h.fetch(h.widgets.url.Text())
 	}
 	if h.widgets.saveBtn.Clicked() {
-		// h.reqStor.Save(state.Request{
-		// 	Method: state.GET, // TODO: Change this.
-		// 	URL:    h.widgets.url.Text(),
-		// 	Name:   h.widgets.name.Text(),
-		// })
+		*h.widgets.itemsBtn = append(*h.widgets.itemsBtn, new(widget.Clickable))
+		h.reqStor.Save(state.Request{
+			Method: state.GET, // TODO: Change this.
+			URL:    h.widgets.url.Text(),
+			Name:   h.widgets.name.Text(),
+		})
 	}
-	for i, c := range h.widgets.itemsBtn {
+	for i, c := range *h.widgets.itemsBtn {
 		if c.Clicked() {
 			h.reqStor.SetCurrent(i)
 			h.widgets.url.SetText(h.reqStor.Current().URL)
