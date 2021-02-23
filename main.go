@@ -19,15 +19,11 @@ import (
 )
 
 func loop(w *app.Window) error {
-	var (
-		fetcher       services.Fetcher
-		fetchResponse chan string
-	)
+	var fetchResponse chan string
+
 	fetch := func(url string) {
 		fetchResponse = make(chan string, 1)
-		go func() {
-			fetchResponse <- fetcher.Fetch(state.Request{URL: url})
-		}()
+		services.Fetch(fetchResponse, url)
 	}
 
 	th := material.NewTheme(gofont.Collection())
