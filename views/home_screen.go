@@ -1,7 +1,6 @@
 package views
 
 import (
-	"fmt"
 	"sandbox/state"
 
 	"gioui.org/layout"
@@ -15,6 +14,7 @@ type requestStorage interface {
 	All() state.Requests
 	Save(state.Request)
 	Current() state.Request
+	SetCurrent(i int)
 }
 
 type HomeScreenWidgets struct {
@@ -59,15 +59,15 @@ func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response stri
 		h.fetch(h.widgets.url.Text())
 	}
 	if h.widgets.saveBtn.Clicked() {
-		h.reqStor.Save(state.Request{
-			Method: state.GET, // TODO: Change this.
-			URL:    h.widgets.url.Text(),
-			Name:   h.widgets.name.Text(),
-		})
+		// h.reqStor.Save(state.Request{
+		// 	Method: state.GET, // TODO: Change this.
+		// 	URL:    h.widgets.url.Text(),
+		// 	Name:   h.widgets.name.Text(),
+		// })
 	}
-	for _, i := range h.widgets.itemsBtn {
-		if i.Clicked() {
-			fmt.Println("clicked")
+	for i, c := range h.widgets.itemsBtn {
+		if c.Clicked() {
+			h.reqStor.SetCurrent(i)
 		}
 	}
 	return h.home.Layout(gtx, Requests{ReqList: h.reqStor.All(), Current: h.reqStor.Current()}, fetching, response)

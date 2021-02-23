@@ -13,6 +13,7 @@ import (
 )
 
 type HomeStyle struct {
+	th     *material.Theme
 	loader material.LoaderStyle
 	lbl    material.LabelStyle
 
@@ -21,6 +22,8 @@ type HomeStyle struct {
 
 	save                  *widget.Clickable
 	fetchStyle, saveStyle material.ButtonStyle
+
+	reqs []*widget.Clickable
 }
 
 // TODO change the awesome names
@@ -31,6 +34,7 @@ type Requests struct {
 
 func Home(th *material.Theme, widgets HomeScreenWidgets) HomeStyle {
 	return HomeStyle{
+		th:     th,
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),
 
@@ -42,6 +46,8 @@ func Home(th *material.Theme, widgets HomeScreenWidgets) HomeStyle {
 		save:       widgets.saveBtn,
 		fetchStyle: material.Button(th, widgets.fetchBtn, "Fetch"),
 		saveStyle:  material.Button(th, widgets.saveBtn, "Save"),
+
+		reqs: widgets.itemsBtn,
 	}
 }
 
@@ -70,10 +76,10 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, current state.Re
 	methods := func(gtx layout.Context) layout.Dimensions {
 		list := layout.List{Axis: layout.Vertical}
 		return list.Layout(gtx, len(r), func(gtx layout.Context, index int) layout.Dimensions {
-			h.lbl.Text = fmt.Sprintf("%s %s", r[index].Method, r[index].Name)
-			return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-				layout.Rigid(h.lbl.Layout),
-			)
+			label := fmt.Sprintf("%s %s", r[index].Method, r[index].Name)
+			return layout.UniformInset(unit.Dp(4)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return material.Button(h.th, h.reqs[index], label).Layout(gtx)
+			})
 		})
 	}
 	inset := func(w layout.Widget) layout.Widget {

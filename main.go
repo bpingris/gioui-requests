@@ -100,3 +100,7 @@ func (rp *homeScreenRequestStorageAdaptor) Save(r state.Request) {
 func (rp *homeScreenRequestStorageAdaptor) Current() state.Request {
 	return rp.requests[rp.current]
 }
+
+func (rp *homeScreenRequestStorageAdaptor) SetCurrent(i int) {
+	rp.current = i
+}
