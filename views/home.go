@@ -88,8 +88,6 @@ func (h HomeStyle) layout(gtx layout.Context, r state.Requests, current state.Re
 		}
 	}
 	inputs := func(gtx layout.Context) layout.Dimensions {
-		h.urlInp.Editor.Editor.SetText(current.URL)
-		h.nameInp.Editor.Editor.SetText(current.Name)
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(inset(h.urlInp.Layout)),
 			layout.Rigid(inset(h.nameInp.Layout)),

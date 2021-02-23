@@ -32,7 +32,9 @@ type HomeScreenStyle struct {
 
 func HomeScreen(th *material.Theme, fetch func(url string), rs requestStorage) HomeScreenStyle {
 	url := new(widget.Editor)
+	url.SetText(rs.Current().URL)
 	name := new(widget.Editor)
+	name.SetText(rs.Current().Name)
 	fetchBtn := new(widget.Clickable)
 	saveBtn := new(widget.Clickable)
 	var itemsBtn []*widget.Clickable
@@ -68,6 +70,8 @@ func (h HomeScreenStyle) Layout(gtx layout.Context, fetching bool, response stri
 	for i, c := range h.widgets.itemsBtn {
 		if c.Clicked() {
 			h.reqStor.SetCurrent(i)
+			h.widgets.url.SetText(h.reqStor.Current().URL)
+			h.widgets.name.SetText(h.reqStor.Current().Name)
 		}
 	}
 	return h.home.Layout(gtx, Requests{ReqList: h.reqStor.All(), Current: h.reqStor.Current()}, fetching, response)
