@@ -3,7 +3,7 @@ package views
 import (
 	"fmt"
 	"sandbox/state"
-	"sandbox/ui"
+	sm "sandbox/widget/material"
 	"strings"
 
 	"gioui.org/layout"
@@ -18,7 +18,7 @@ type HomeStyle struct {
 	loader material.LoaderStyle
 	lbl    material.LabelStyle
 
-	urlInp, nameInp ui.InputStyle
+	urlInp, nameInp sm.InputStyle
 
 	fetchStyle, saveStyle material.ButtonStyle
 }
@@ -37,8 +37,8 @@ func Home(th *material.Theme, widgets *HomeScreenWidgets) HomeStyle {
 
 		widgets: widgets,
 
-		urlInp:  ui.Input(th, &widgets.url, "URL"),
-		nameInp: ui.Input(th, &widgets.name, "Name"),
+		urlInp:  sm.Input(th, &widgets.url, "URL"),
+		nameInp: sm.Input(th, &widgets.name, "Name"),
 
 		fetchStyle: material.Button(th, &widgets.fetchBtn, "Fetch"),
 		saveStyle:  material.Button(th, &widgets.saveBtn, "Save"),
