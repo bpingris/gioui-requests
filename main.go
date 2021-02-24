@@ -4,7 +4,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"sandbox/services"
+	"sandbox/service"
 	"sandbox/state"
 	"sandbox/view"
 	mat "sandbox/widget/material"
@@ -20,11 +20,19 @@ import (
 )
 
 func loop(w *app.Window) error {
-	var fetchResponse chan string
+	var (
+		fetcher       service.Fetcher
+		fetchResponse chan string
+	)
 
-	fetch := func(url string) {
+	fetch := func(m state.Method, url string) {
 		fetchResponse = make(chan string, 1)
-		services.Fetch(fetchResponse, url)
+		// Ensure closure has its own reference. We need this to guarantee
+		// the buffer of size 1 will be used once and only once.
+		fetchResponse := fetchResponse
+		go func() {
+			fetchResponse <- fetcher.Fetch(m, url)
+		}()
 	}
 
 	th := material.NewTheme(gofont.Collection())
@@ -75,7 +83,6 @@ func main() {
 // requestStorage and requestProviderAdaptor exist for demonstration purpose.
 type requestStorage struct {
 	requests state.Requests
-	current  int
 }
 
 func (rs *requestStorage) add(m state.Method, url, name string) {
@@ -101,10 +108,6 @@ func (rp *homeScreenRequestStorageAdaptor) Save(r state.Request) {
 	(*requestStorage)(rp).addRequest(r)
 }
 
-func (rp *homeScreenRequestStorageAdaptor) Current() state.Request {
-	return rp.requests[rp.current]
-}
-
-func (rp *homeScreenRequestStorageAdaptor) SetCurrent(i int) {
-	rp.current = i
+func (rp *homeScreenRequestStorageAdaptor) At(index int) state.Request {
+	return (*requestStorage)(rp).requests[index]
 }
