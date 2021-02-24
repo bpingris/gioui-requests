@@ -65,8 +65,7 @@ func Home(th *material.Theme, fetch func(url string), rs requestStorage) HomeSty
 		btnStyle: material.Button(th, nil, ""), // Store as a style only.
 	}
 	if all := rs.All(); len(all) > 0 {
-		widgets.URL.SetText(all[0].URL)
-		widgets.Name.SetText(all[0].Name)
+		widgets.setRequest(all[0])
 	}
 	for _, r := range rs.All() {
 		widgets.addSavedRequestButton(r)
