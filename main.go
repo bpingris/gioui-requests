@@ -71,7 +71,6 @@ func main() {
 // requestStorage and requestProviderAdaptor exist for demonstration purpose.
 type requestStorage struct {
 	requests state.Requests
-	current  int
 }
 
 func (rs *requestStorage) add(m state.Method, url, name string) {
@@ -97,10 +96,6 @@ func (rp *homeScreenRequestStorageAdaptor) Save(r state.Request) {
 	(*requestStorage)(rp).addRequest(r)
 }
 
-func (rp *homeScreenRequestStorageAdaptor) Current() state.Request {
-	return rp.requests[rp.current]
-}
-
-func (rp *homeScreenRequestStorageAdaptor) SetCurrent(i int) {
-	rp.current = i
+func (rp *homeScreenRequestStorageAdaptor) At(index int) state.Request {
+	return (*requestStorage)(rp).requests[index]
 }
