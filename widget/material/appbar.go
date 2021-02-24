@@ -1,7 +1,6 @@
 package material
 
 import (
-	"image"
 	"image/color"
 
 	"gioui.org/layout"
@@ -11,37 +10,38 @@ import (
 	"gioui.org/widget/material"
 )
 
-type Appbar struct {
-	Th *material.Theme
+type AppbarStyle struct {
+	Foreground, Background color.NRGBA
+	Label                  material.LabelStyle
+	Inset                  layout.Inset
 }
 
-type fill struct {
-	color color.NRGBA
+func Appbar(th *material.Theme) AppbarStyle {
+	return AppbarStyle{
+		// TODO: Take these from the theme.
+		Foreground: color.NRGBA{R: 255, G: 255, B: 255, A: 255},
+		Background: color.NRGBA{R: 97, G: 97, B: 97, A: 255},
+		Label:      material.Body1(th, "Gioman"),
+		Inset:      layout.UniformInset(unit.Dp(15)),
+	}
 }
 
-func (f fill) Layout(gtx layout.Context) layout.Dimensions {
-	cs := gtx.Constraints
-	d := cs.Min
-	paint.FillShape(gtx.Ops, f.color, clip.Rect(image.Rectangle{Max: d}).Op())
-	return layout.Dimensions{Size: d, Baseline: d.Y}
-}
-
-func (a *Appbar) Layout(gtx layout.Context, w layout.Widget) layout.Dimensions {
-	bg := color.NRGBA{R: 97, G: 97, B: 97, A: 255}
-	fg := color.NRGBA{R: 255, G: 255, B: 255, A: 255}
-
-	appbar := layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+func (a AppbarStyle) Layout(gtx layout.Context, w layout.Widget) layout.Dimensions {
+	appbar := func(gtx layout.Context) layout.Dimensions {
+		min := gtx.Constraints.Min
 		return layout.Stack{Alignment: layout.NW}.Layout(gtx,
-			layout.Expanded(fill{bg}.Layout),
+			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+				paint.FillShape(gtx.Ops, a.Background, clip.Rect{Max: gtx.Constraints.Min}.Op())
+				return layout.Dimensions{Size: gtx.Constraints.Min}
+			}),
 			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{}.Layout(gtx, layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-					lbl := material.Body1(a.Th, "Gioman")
-					lbl.Color = fg
-					return layout.UniformInset(unit.Dp(15)).Layout(gtx, lbl.Layout)
-				}))
+				gtx.Constraints.Min = min
+				return a.Inset.Layout(gtx, a.Label.Layout)
 			}),
 		)
-	})
-
-	return layout.Flex{Axis: layout.Vertical}.Layout(gtx, appbar, layout.Flexed(1, w))
+	}
+	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+		layout.Rigid(appbar),
+		layout.Flexed(1, w),
+	)
 }

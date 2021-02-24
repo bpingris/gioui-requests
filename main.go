@@ -43,7 +43,7 @@ func loop(w *app.Window) error {
 
 	response := "Last response N/A"
 
-	appbar := mat.Appbar{Th: th}
+	appbar := mat.Appbar(th)
 	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(&requests))
 
 	var ops op.Ops
