@@ -17,8 +17,7 @@ import (
 type requestStorage interface {
 	All() state.Requests
 	Save(state.Request)
-	Current() state.Request
-	SetCurrent(i int)
+	At(index int) state.Request
 }
 
 type homeStyleState struct {
@@ -49,19 +48,25 @@ func (w *homeStyleState) addSavedRequestButton(r state.Request) {
 	w.ItemsLayout = append(w.ItemsLayout, btn)
 }
 
+func (w *homeStyleState) setRequest(r state.Request) {
+	w.URL.SetText(r.URL)
+	w.Name.SetText(r.Name)
+}
+
 type HomeStyle struct {
 	widgets *homeStyleState
 	home    homeLayoutStyle
-	fetch   func(url string)
+	fetch   func(m state.Method, url string)
 	reqStor requestStorage
 }
 
-func Home(th *material.Theme, fetch func(url string), rs requestStorage) HomeStyle {
+func Home(th *material.Theme, fetch func(m state.Method, url string), rs requestStorage) HomeStyle {
 	widgets := &homeStyleState{
 		btnStyle: material.Button(th, nil, ""), // Store as a style only.
 	}
-	widgets.URL.SetText(rs.Current().URL)
-	widgets.Name.SetText(rs.Current().Name)
+	if all := rs.All(); len(all) > 0 {
+		widgets.setRequest(all[0])
+	}
 	for _, r := range rs.All() {
 		widgets.addSavedRequestButton(r)
 	}
@@ -75,20 +80,17 @@ func Home(th *material.Theme, fetch func(url string), rs requestStorage) HomeSty
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
 	if h.widgets.Fetch.Clicked() {
-		h.fetch(h.widgets.URL.Text())
+		h.fetch(state.GET, h.widgets.URL.Text())
 	}
 	if h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
 	}
 	for i, c := range h.widgets.Items {
 		if c.Clicked() {
-			h.reqStor.SetCurrent(i)
-			h.widgets.URL.SetText(h.reqStor.Current().URL)
-			h.widgets.Name.SetText(h.reqStor.Current().Name)
+			h.widgets.setRequest(h.reqStor.At(i))
 		}
 	}
 	return h.home.Layout(gtx, homeLayoutStyleContext{
-		req:      h.reqStor.Current(),
 		fetching: fetching,
 		response: response,
 		saved:    h.widgets.ItemsLayout,
@@ -118,7 +120,6 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 }
 
 type homeLayoutStyleContext struct {
-	req      state.Request
 	fetching bool
 	response string
 	saved    []material.ButtonStyle
