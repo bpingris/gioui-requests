@@ -4,7 +4,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"sandbox/services"
+	"sandbox/service"
 	"sandbox/state"
 	"sandbox/view"
 	mat "sandbox/widget/material"
@@ -21,7 +21,7 @@ import (
 
 func loop(w *app.Window) error {
 	var (
-		fetcher       services.Fetcher
+		fetcher       service.Fetcher
 		fetchResponse chan string
 	)
 
