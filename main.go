@@ -7,6 +7,7 @@ import (
 	"sandbox/services"
 	"sandbox/state"
 	"sandbox/view"
+	mat "sandbox/widget/material"
 	"time"
 
 	"gioui.org/app"
@@ -34,6 +35,7 @@ func loop(w *app.Window) error {
 
 	response := "Last response N/A"
 
+	appbar := mat.Appbar{Th: th}
 	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(&requests))
 
 	var ops op.Ops
@@ -46,7 +48,9 @@ func loop(w *app.Window) error {
 			case system.FrameEvent:
 				gtx := layout.NewContext(&ops, e)
 				fetching := fetchResponse != nil
-				home.Layout(gtx, fetching, response)
+				appbar.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					return home.Layout(gtx, fetching, response)
+				})
 				e.Frame(gtx.Ops)
 			}
 		case response = <-fetchResponse:
