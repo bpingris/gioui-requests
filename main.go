@@ -6,7 +6,7 @@ import (
 	"os"
 	"sandbox/services"
 	"sandbox/state"
-	"sandbox/views"
+	"sandbox/view"
 	"time"
 
 	"gioui.org/app"
@@ -34,7 +34,7 @@ func loop(w *app.Window) error {
 
 	response := "Last response N/A"
 
-	home := views.HomeScreen(th, fetch, (*homeScreenRequestStorageAdaptor)(&requests))
+	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(&requests))
 
 	var ops op.Ops
 	for {
