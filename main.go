@@ -25,7 +25,7 @@ func loop(w *app.Window) error {
 		fetchResponse chan string
 	)
 
-	fetch := func(m state.Method, url string) {
+	fetch := func(m service.Method, url string) {
 		fetchResponse = make(chan string, 1)
 		// Ensure closure has its own reference. We need this to guarantee
 		// the buffer of size 1 will be used once and only once.
@@ -38,8 +38,8 @@ func loop(w *app.Window) error {
 	th := material.NewTheme(gofont.Collection())
 
 	var requests requestStorage
-	requests.add(state.GET, "https://typicode.jsonplaceholder.com/todos/1", "jsonplaceholder")
-	requests.add(state.POST, "https://typicode.jsonplaceholder.com/comments/1", "/comments")
+	requests.add(service.GET, "https://jsonplaceholder.typicode.com/todos/1", "jsonplaceholder")
+	requests.add(service.POST, "https://jsonplaceholder.typicode.com/comments/1", "/comments")
 
 	response := "Last response N/A"
 
@@ -85,7 +85,7 @@ type requestStorage struct {
 	requests state.Requests
 }
 
-func (rs *requestStorage) add(m state.Method, url, name string) {
+func (rs *requestStorage) add(m service.Method, url, name string) {
 	rs.requests = append(rs.requests, state.Request{
 		Method: m,
 		URL:    url,

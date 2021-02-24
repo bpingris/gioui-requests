@@ -1,25 +1,9 @@
 package state
 
-type Method int
-
-const (
-	GET Method = iota
-	POST
-	DELETE
-	PUT
-)
-
-func (m Method) String() string {
-	return map[Method]string{
-		GET:    "GET",
-		POST:   "POST",
-		DELETE: "DELETE",
-		PUT:    "PUT",
-	}[m]
-}
+import "sandbox/service"
 
 type Request struct {
-	Method Method
+	Method service.Method
 	URL    string
 	Name   string
 }

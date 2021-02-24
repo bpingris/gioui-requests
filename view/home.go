@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"sandbox/service"
 	"sandbox/state"
 	mat "sandbox/widget/material"
 	"strings"
@@ -30,7 +31,7 @@ type homeStyleState struct {
 
 func (w *homeStyleState) saveRequest(rs requestStorage) {
 	r := state.Request{
-		Method: state.GET, // TODO: Change this.
+		Method: service.GET, // TODO: Change this.
 		URL:    w.URL.Text(),
 		Name:   w.Name.Text(),
 	}
@@ -56,11 +57,11 @@ func (w *homeStyleState) setRequest(r state.Request) {
 type HomeStyle struct {
 	widgets *homeStyleState
 	home    homeLayoutStyle
-	fetch   func(m state.Method, url string)
+	fetch   func(m service.Method, url string)
 	reqStor requestStorage
 }
 
-func Home(th *material.Theme, fetch func(m state.Method, url string), rs requestStorage) HomeStyle {
+func Home(th *material.Theme, fetch func(m service.Method, url string), rs requestStorage) HomeStyle {
 	widgets := &homeStyleState{
 		btnStyle: material.Button(th, nil, ""), // Store as a style only.
 	}
@@ -80,7 +81,7 @@ func Home(th *material.Theme, fetch func(m state.Method, url string), rs request
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
 	if h.widgets.Fetch.Clicked() {
-		h.fetch(state.GET, h.widgets.URL.Text())
+		h.fetch(service.GET, h.widgets.URL.Text())
 	}
 	if h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
