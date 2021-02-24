@@ -1,8 +1,9 @@
-package material
+package view
 
 import (
 	"fmt"
 	"sandbox/state"
+	sm "sandbox/widget/material"
 	"strings"
 
 	"gioui.org/layout"
@@ -98,7 +99,7 @@ type homeLayoutStyle struct {
 	loader material.LoaderStyle
 	lbl    material.LabelStyle
 
-	url, name InputStyle
+	url, name sm.InputStyle
 
 	fetchStyle, saveStyle material.ButtonStyle
 }
@@ -108,8 +109,8 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 		loader: material.Loader(th),
 		lbl:    material.Body1(th, ""),
 
-		url:  Input(th, &state.URL, "URL"),
-		name: Input(th, &state.Name, "Name"),
+		url:  sm.Input(th, &state.URL, "URL"),
+		name: sm.Input(th, &state.Name, "Name"),
 
 		fetchStyle: material.Button(th, &state.Fetch, "Fetch"),
 		saveStyle:  material.Button(th, &state.Save, "Save"),
