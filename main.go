@@ -24,13 +24,13 @@ func loop(w *app.Window) error {
 		fetchResponse chan string
 	)
 
-	fetch := func(url string) {
+	fetch := func(m state.Method, url string) {
 		fetchResponse = make(chan string, 1)
 		// Ensure closure has its own reference. We need this to guarantee
 		// the buffer of size 1 will be used once and only once.
 		fetchResponse := fetchResponse
 		go func() {
-			fetchResponse <- services.Fetch(fetchResponse, url)
+			fetchResponse <- fetcher.Fetch(m, url)
 		}()
 	}
 

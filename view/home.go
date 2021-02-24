@@ -56,11 +56,11 @@ func (w *homeStyleState) setRequest(r state.Request) {
 type HomeStyle struct {
 	widgets *homeStyleState
 	home    homeLayoutStyle
-	fetch   func(url string)
+	fetch   func(m state.Method, url string)
 	reqStor requestStorage
 }
 
-func Home(th *material.Theme, fetch func(url string), rs requestStorage) HomeStyle {
+func Home(th *material.Theme, fetch func(m state.Method, url string), rs requestStorage) HomeStyle {
 	widgets := &homeStyleState{
 		btnStyle: material.Button(th, nil, ""), // Store as a style only.
 	}
@@ -80,7 +80,7 @@ func Home(th *material.Theme, fetch func(url string), rs requestStorage) HomeSty
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
 	if h.widgets.Fetch.Clicked() {
-		h.fetch(h.widgets.URL.Text())
+		h.fetch(state.GET, h.widgets.URL.Text())
 	}
 	if h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
