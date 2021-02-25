@@ -173,8 +173,8 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 		}
 	}
 	buttons := func(gtx layout.Context) layout.Dimensions {
-		hasURL := len(strings.TrimSpace(h.url.Editor.Editor.Text())) > 0
-		hasName := len(strings.TrimSpace(h.name.Editor.Editor.Text())) > 0
+		hasURL := len(strings.TrimSpace(h.url.Editor.Text())) > 0
+		hasName := len(strings.TrimSpace(h.name.Editor.Text())) > 0
 		return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceStart}.Layout(gtx,
 			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), hasURL)),
 			layout.Rigid(enableIf(inset(h.saveStyle.Layout), hasName)),
