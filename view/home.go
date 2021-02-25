@@ -2,9 +2,9 @@ package view
 
 import (
 	"fmt"
-	"sandbox/service"
-	"sandbox/state"
-	mat "sandbox/widget/material"
+	"gioman/service"
+	"gioman/state"
+	mat "gioman/widget/material"
 	"strings"
 
 	"gioui.org/layout"

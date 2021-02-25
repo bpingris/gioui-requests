@@ -1,4 +1,4 @@
-module sandbox
+module gioman
 
 go 1.15
 

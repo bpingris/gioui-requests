@@ -30,7 +30,7 @@ func Appbar(th *material.Theme) AppbarStyle {
 func (a AppbarStyle) Layout(gtx layout.Context, w layout.Widget) layout.Dimensions {
 	appbar := func(gtx layout.Context) layout.Dimensions {
 		min := gtx.Constraints.Min
-		return layout.Stack{Alignment: layout.NW}.Layout(gtx,
+		return layout.Stack{}.Layout(gtx,
 			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
 				paint.FillShape(gtx.Ops, a.Background, clip.Rect{Max: gtx.Constraints.Min}.Op())
 				return layout.Dimensions{Size: gtx.Constraints.Min}
