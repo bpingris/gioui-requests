@@ -1,13 +1,13 @@
 package main
 
 import (
+	"gioman/service"
+	"gioman/state"
+	"gioman/view"
+	mat "gioman/widget/material"
 	"log"
 	"math/rand"
 	"os"
-	"sandbox/service"
-	"sandbox/state"
-	"sandbox/view"
-	mat "sandbox/widget/material"
 	"time"
 
 	"gioui.org/app"

@@ -1,6 +1,6 @@
 package state
 
-import "sandbox/service"
+import "gioman/service"
 
 type Request struct {
 	Method service.Method
