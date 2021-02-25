@@ -71,7 +71,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	go func() {
-		w := app.NewWindow(app.Size(unit.Dp(600), unit.Dp(400)))
+		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(600)))
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
