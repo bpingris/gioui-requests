@@ -192,16 +192,24 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 	if h.resp.Editor.Text() != ctx.response {
 		h.resp.Editor.SetText(ctx.response)
 	}
+
 	controls := func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(inputs),
 			layout.Rigid(buttons),
+		)
+	}
+
+	response := func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{}.Layout(gtx,
+			layout.Flexed(1, controls),
 			layout.Flexed(1, inset(h.resp.Layout)),
 		)
 	}
+
 	return layout.Flex{}.Layout(gtx,
 		layout.Flexed(1, methods),
-		layout.Flexed(2, controls),
+		layout.Flexed(3, response),
 	)
 }
 
