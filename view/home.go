@@ -63,6 +63,14 @@ type HomeStyle struct {
 
 func Home(th *material.Theme, fetch func(m service.Method, url string), rs requestStorage) HomeStyle {
 	widgets := &homeStyleState{
+		URL: widget.Editor{
+			SingleLine: true,
+			Submit:     true,
+		},
+		Name: widget.Editor{
+			SingleLine: true,
+			Submit:     true,
+		},
 		btnStyle: material.Button(th, nil, ""), // Store as a style only.
 	}
 	if all := rs.All(); len(all) > 0 {
@@ -80,9 +88,11 @@ func Home(th *material.Theme, fetch func(m service.Method, url string), rs reque
 }
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
-	if h.widgets.Fetch.Clicked() {
+	if hasSubmitEvent(h.widgets.URL) || h.widgets.Fetch.Clicked() {
 		h.fetch(service.GET, h.widgets.URL.Text())
 	}
+	// Not checking for submit event from the save input line, since it causes
+	// current request being saved twice.
 	if h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
 	}
@@ -194,4 +204,13 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 		layout.Flexed(1, methods),
 		layout.Flexed(2, controls),
 	)
+}
+
+func hasSubmitEvent(w widget.Editor) bool {
+	for _, e := range w.Events() {
+		if _, ok := e.(widget.SubmitEvent); ok {
+			return true
+		}
+	}
+	return false
 }
