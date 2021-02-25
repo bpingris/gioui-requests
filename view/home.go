@@ -63,6 +63,14 @@ type HomeStyle struct {
 
 func Home(th *material.Theme, fetch func(m service.Method, url string), rs requestStorage) HomeStyle {
 	widgets := &homeStyleState{
+		URL: widget.Editor{
+			SingleLine: true,
+			Submit:     true,
+		},
+		Name: widget.Editor{
+			SingleLine: true,
+			Submit:     true,
+		},
 		btnStyle: material.Button(th, nil, ""), // Store as a style only.
 	}
 	if all := rs.All(); len(all) > 0 {
@@ -80,10 +88,10 @@ func Home(th *material.Theme, fetch func(m service.Method, url string), rs reque
 }
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
-	if h.widgets.Fetch.Clicked() {
+	if hasSubmitEvent(h.widgets.URL.Events()) || h.widgets.Fetch.Clicked() {
 		h.fetch(service.GET, h.widgets.URL.Text())
 	}
-	if h.widgets.Save.Clicked() {
+	if hasSubmitEvent(h.widgets.Name.Events()) || h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
 	}
 	for i, c := range h.widgets.Items {
@@ -173,8 +181,8 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 		}
 	}
 	buttons := func(gtx layout.Context) layout.Dimensions {
-		hasURL := len(strings.TrimSpace(h.url.Editor.Editor.Text())) > 0
-		hasName := len(strings.TrimSpace(h.name.Editor.Editor.Text())) > 0
+		hasURL := len(strings.TrimSpace(h.url.Editor.Text())) > 0
+		hasName := len(strings.TrimSpace(h.name.Editor.Text())) > 0
 		return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceStart}.Layout(gtx,
 			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), hasURL)),
 			layout.Rigid(enableIf(inset(h.saveStyle.Layout), hasName)),
@@ -194,4 +202,13 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 		layout.Flexed(1, methods),
 		layout.Flexed(2, controls),
 	)
+}
+
+func hasSubmitEvent(evts []widget.EditorEvent) bool {
+	for _, e := range evts {
+		if _, ok := e.(widget.SubmitEvent); ok {
+			return true
+		}
+	}
+	return false
 }
