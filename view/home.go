@@ -5,9 +5,11 @@ import (
 	"gioman/service"
 	"gioman/state"
 	mat "gioman/widget/material"
+	"image/color"
 	"strings"
 
 	"gioui.org/layout"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -22,11 +24,12 @@ type requestStorage interface {
 }
 
 type homeStyleState struct {
-	URL, Name   widget.Editor
-	Fetch, Save widget.Clickable
-	Items       []*widget.Clickable
-	ItemsLayout []material.ButtonStyle // Cached Items buttons.
-	btnStyle    material.ButtonStyle   // To create new buttons only.
+	URL, Name    widget.Editor
+	Fetch, Save  widget.Clickable
+	Header, Body widget.Clickable
+	Items        []*widget.Clickable
+	ItemsLayout  []material.ButtonStyle // Cached Items buttons.
+	btnStyle     material.ButtonStyle   // To create new buttons only.
 }
 
 func (w *homeStyleState) saveRequest(rs requestStorage) {
@@ -112,11 +115,21 @@ type homeLayoutStyle struct {
 
 	url, name mat.InputStyle
 
-	fetchStyle, saveStyle material.ButtonStyle
-	list                  *layout.List
+	fetchStyle, saveStyle  material.ButtonStyle
+	headerStyle, bodyStyle material.ButtonStyle
+	list                   *layout.List
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
+	hs := material.Button(th, &state.Header, "Header")
+	bs := material.Button(th, &state.Body, "Body")
+	hs.Background = color.NRGBA{A: 0}
+	hs.Color = th.ContrastBg
+	bs.Background = color.NRGBA{A: 0}
+	bs.Color = th.ContrastBg
+	bs.Font.Weight = text.Bold
+	hs.Font.Weight = text.Bold
+
 	return homeLayoutStyle{
 		loader: material.Loader(th),
 		resp:   mat.Input(th, new(widget.Editor), "Response N/A"),
@@ -124,9 +137,11 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 		url:  mat.Input(th, &state.URL, "URL"),
 		name: mat.Input(th, &state.Name, "Name"),
 
-		fetchStyle: material.Button(th, &state.Fetch, "Fetch"),
-		saveStyle:  material.Button(th, &state.Save, "Save"),
-		list:       &layout.List{Axis: layout.Vertical},
+		fetchStyle:  material.Button(th, &state.Fetch, "Fetch"),
+		saveStyle:   material.Button(th, &state.Save, "Save"),
+		headerStyle: hs,
+		bodyStyle:   bs,
+		list:        &layout.List{Axis: layout.Vertical},
 	}
 }
 
@@ -157,6 +172,14 @@ func (h homeLayoutStyle) Layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 }
 
 func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) layout.Dimensions {
+	enableIf := func(w layout.Widget, enable bool) layout.Widget {
+		return func(gtx layout.Context) layout.Dimensions {
+			if !enable {
+				gtx = gtx.Disabled()
+			}
+			return w(gtx)
+		}
+	}
 	methods := func(gtx layout.Context) layout.Dimensions {
 		return h.list.Layout(gtx, len(ctx.saved), func(gtx layout.Context, index int) layout.Dimensions {
 			return layout.UniformInset(unit.Dp(4)).Layout(gtx, ctx.saved[index].Layout)
@@ -173,14 +196,6 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 			layout.Rigid(inset(h.name.Layout)),
 		)
 	}
-	enableIf := func(w layout.Widget, enable bool) layout.Widget {
-		return func(gtx layout.Context) layout.Dimensions {
-			if !enable {
-				gtx = gtx.Disabled()
-			}
-			return w(gtx)
-		}
-	}
 	buttons := func(gtx layout.Context) layout.Dimensions {
 		hasURL := len(strings.TrimSpace(h.url.Editor.Text())) > 0
 		hasName := len(strings.TrimSpace(h.name.Editor.Text())) > 0
@@ -193,10 +208,21 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 		h.resp.Editor.SetText(ctx.response)
 	}
 
+	tabs := func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{}.Layout(gtx,
+			layout.Rigid(inset(h.headerStyle.Layout)),
+			layout.Rigid(inset(h.bodyStyle.Layout)))
+	}
+
 	controls := func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(inputs),
-			layout.Rigid(buttons),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				return layout.Flex{Spacing: layout.SpaceBetween}.Layout(gtx,
+					layout.Rigid(tabs),
+					layout.Rigid(buttons),
+				)
+			}),
 		)
 	}
 
