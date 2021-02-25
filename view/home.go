@@ -88,10 +88,10 @@ func Home(th *material.Theme, fetch func(m service.Method, url string), rs reque
 }
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
-	if hasSubmitEvent(&h.widgets.URL) || h.widgets.Fetch.Clicked() {
+	if hasSubmitEvent(h.widgets.URL.Events()) || h.widgets.Fetch.Clicked() {
 		h.fetch(service.GET, h.widgets.URL.Text())
 	}
-	if hasSubmitEvent(&h.widgets.Name) || h.widgets.Save.Clicked() {
+	if hasSubmitEvent(h.widgets.Name.Events()) || h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
 	}
 	for i, c := range h.widgets.Items {
@@ -204,8 +204,8 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 	)
 }
 
-func hasSubmitEvent(w *widget.Editor) bool {
-	for _, e := range w.Events() {
+func hasSubmitEvent(evts []widget.EditorEvent) bool {
+	for _, e := range evts {
 		if _, ok := e.(widget.SubmitEvent); ok {
 			return true
 		}
