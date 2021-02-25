@@ -108,7 +108,7 @@ func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) la
 
 type homeLayoutStyle struct {
 	loader material.LoaderStyle
-	lbl    material.LabelStyle
+	resp   mat.InputStyle
 
 	url, name mat.InputStyle
 
@@ -119,7 +119,7 @@ type homeLayoutStyle struct {
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 	return homeLayoutStyle{
 		loader: material.Loader(th),
-		lbl:    material.Body1(th, ""),
+		resp:   mat.Input(th, new(widget.Editor), "Response N/A"),
 
 		url:  mat.Input(th, &state.URL, "URL"),
 		name: mat.Input(th, &state.Name, "Name"),
@@ -189,14 +189,14 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 			layout.Rigid(enableIf(inset(h.saveStyle.Layout), hasName)),
 		)
 	}
-	// TODO: May require different style, in which case move it to the constructor.
-	resp := h.lbl
-	resp.Text = ctx.response
+	if h.resp.Editor.Text() != ctx.response {
+		h.resp.Editor.SetText(ctx.response)
+	}
 	controls := func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(inputs),
 			layout.Rigid(buttons),
-			layout.Rigid(inset(resp.Layout)),
+			layout.Flexed(1, inset(h.resp.Layout)),
 		)
 	}
 	return layout.Flex{}.Layout(gtx,
