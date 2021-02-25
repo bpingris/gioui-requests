@@ -113,6 +113,7 @@ type homeLayoutStyle struct {
 	url, name mat.InputStyle
 
 	fetchStyle, saveStyle material.ButtonStyle
+	list                  layout.List
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
@@ -125,6 +126,7 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 
 		fetchStyle: material.Button(th, &state.Fetch, "Fetch"),
 		saveStyle:  material.Button(th, &state.Save, "Save"),
+		list:       layout.List{Axis: layout.Vertical},
 	}
 }
 
@@ -156,8 +158,7 @@ func (h homeLayoutStyle) Layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 
 func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) layout.Dimensions {
 	methods := func(gtx layout.Context) layout.Dimensions {
-		list := layout.List{Axis: layout.Vertical}
-		return list.Layout(gtx, len(ctx.saved), func(gtx layout.Context, index int) layout.Dimensions {
+		return h.list.Layout(gtx, len(ctx.saved), func(gtx layout.Context, index int) layout.Dimensions {
 			return layout.UniformInset(unit.Dp(4)).Layout(gtx, ctx.saved[index].Layout)
 		})
 	}
