@@ -5,11 +5,9 @@ import (
 	"gioman/service"
 	"gioman/state"
 	mat "gioman/widget/material"
-	"image/color"
 	"strings"
 
 	"gioui.org/layout"
-	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -116,19 +114,14 @@ type homeLayoutStyle struct {
 	url, name mat.InputStyle
 
 	fetchStyle, saveStyle  material.ButtonStyle
-	headerStyle, bodyStyle material.ButtonStyle
+	headerStyle, bodyStyle mat.TabButtonStyle
 	list                   *layout.List
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
-	hs := material.Button(th, &state.Header, "Header")
-	bs := material.Button(th, &state.Body, "Body")
-	hs.Background = color.NRGBA{A: 0}
-	hs.Color = th.ContrastBg
-	bs.Background = color.NRGBA{A: 0}
-	bs.Color = th.ContrastBg
-	bs.Font.Weight = text.Bold
-	hs.Font.Weight = text.Bold
+	hs := mat.TabButton(th, &state.Header, "Header")
+	bs := mat.TabButton(th, &state.Body, "Body")
+	hs.Active = true
 
 	return homeLayoutStyle{
 		loader: material.Loader(th),
