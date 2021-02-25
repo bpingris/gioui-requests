@@ -113,7 +113,7 @@ type homeLayoutStyle struct {
 	url, name mat.InputStyle
 
 	fetchStyle, saveStyle material.ButtonStyle
-	list                  layout.List
+	list                  *layout.List
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
@@ -126,7 +126,7 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 
 		fetchStyle: material.Button(th, &state.Fetch, "Fetch"),
 		saveStyle:  material.Button(th, &state.Save, "Save"),
-		list:       layout.List{Axis: layout.Vertical},
+		list:       &layout.List{Axis: layout.Vertical},
 	}
 }
 
