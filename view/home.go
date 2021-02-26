@@ -59,7 +59,7 @@ func (w *homeStyleState) setRequest(r state.Request) {
 
 type HomeStyle struct {
 	widgets *homeStyleState
-	home    homeLayoutStyle
+	home    *homeLayoutStyle
 	fetch   func(m service.Method, url string)
 	reqStor requestStorage
 }
@@ -102,6 +102,16 @@ func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) la
 			h.widgets.setRequest(h.reqStor.At(i))
 		}
 	}
+
+	if h.widgets.Body.Clicked() {
+		h.home.bodyStyle.Active = true
+		h.home.headerStyle.Active = false
+	}
+	if h.widgets.Header.Clicked() {
+		h.home.headerStyle.Active = true
+		h.home.bodyStyle.Active = false
+	}
+
 	return h.home.Layout(gtx, homeLayoutStyleContext{
 		fetching: fetching,
 		response: response,
@@ -122,12 +132,12 @@ type homeLayoutStyle struct {
 	minSZ *image.Point
 }
 
-func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
-	hs := mat.TabButton(th, &state.Header, "Header")
+func homeLayout(th *material.Theme, state *homeStyleState) *homeLayoutStyle {
 	bs := mat.TabButton(th, &state.Body, "Body")
-	hs.Active = true
+	hs := mat.TabButton(th, &state.Header, "Header")
+	bs.Active = true
 
-	return homeLayoutStyle{
+	return &homeLayoutStyle{
 		loader: material.Loader(th),
 		resp:   mat.Input(th, new(widget.Editor), "Response N/A"),
 
@@ -218,8 +228,8 @@ func (h homeLayoutStyle) controlsLayout(gtx layout.Context) layout.Dimensions {
 		}),
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
-				layout.Rigid(inset(h.headerStyle.Layout)),
 				layout.Rigid(inset(h.bodyStyle.Layout)),
+				layout.Rigid(inset(h.headerStyle.Layout)),
 			)
 		}),
 	)
