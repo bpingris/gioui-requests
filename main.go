@@ -23,50 +23,6 @@ import (
 
 var configPath = flag.String("config", "config.json", "a configuration file")
 
-func loop(w *app.Window, requests *requestStorage) error {
-	var (
-		fetcher       service.Fetcher
-		fetchResponse chan string
-	)
-
-	fetch := func(m service.Method, url string) {
-		fetchResponse = make(chan string, 1)
-		// Ensure closure has its own reference. We need this to guarantee
-		// the buffer of size 1 will be used once and only once.
-		fetchResponse := fetchResponse
-		go func() {
-			fetchResponse <- fetcher.Fetch(m, url)
-		}()
-	}
-
-	th := material.NewTheme(gofont.Collection())
-
-	response := "Last response N/A"
-
-	appbar := mat.Appbar(th)
-	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(requests))
-
-	var ops op.Ops
-	for {
-		select {
-		case e := <-w.Events():
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				return e.Err
-			case system.FrameEvent:
-				gtx := layout.NewContext(&ops, e)
-				fetching := fetchResponse != nil
-				appbar.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-					return home.Layout(gtx, fetching, response)
-				})
-				e.Frame(gtx.Ops)
-			}
-		case response = <-fetchResponse:
-			fetchResponse = nil
-		}
-	}
-}
-
 func main() {
 	flag.Parse()
 	rand.Seed(time.Now().UnixNano())
@@ -112,6 +68,50 @@ func main() {
 		os.Exit(0)
 	}()
 	app.Main()
+}
+
+func loop(w *app.Window, requests *requestStorage) error {
+	var (
+		fetcher       service.Fetcher
+		fetchResponse chan string
+	)
+
+	fetch := func(m service.Method, url string) {
+		fetchResponse = make(chan string, 1)
+		// Ensure closure has its own reference. We need this to guarantee
+		// the buffer of size 1 will be used once and only once.
+		fetchResponse := fetchResponse
+		go func() {
+			fetchResponse <- fetcher.Fetch(m, url)
+		}()
+	}
+
+	th := material.NewTheme(gofont.Collection())
+
+	response := "Last response N/A"
+
+	appbar := mat.Appbar(th)
+	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(requests))
+
+	var ops op.Ops
+	for {
+		select {
+		case e := <-w.Events():
+			switch e := e.(type) {
+			case system.DestroyEvent:
+				return e.Err
+			case system.FrameEvent:
+				gtx := layout.NewContext(&ops, e)
+				fetching := fetchResponse != nil
+				appbar.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					return home.Layout(gtx, fetching, response)
+				})
+				e.Frame(gtx.Ops)
+			}
+		case response = <-fetchResponse:
+			fetchResponse = nil
+		}
+	}
 }
 
 // requestStorage and requestProviderAdaptor exist for demonstration purpose.
