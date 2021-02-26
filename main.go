@@ -1,14 +1,16 @@
 package main
 
 import (
-	"gioman/service"
-	"gioman/state"
-	"gioman/view"
-	mat "gioman/widget/material"
+	"flag"
 	"log"
 	"math/rand"
 	"os"
 	"time"
+
+	"gioman/service"
+	"gioman/state"
+	"gioman/view"
+	mat "gioman/widget/material"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -19,7 +21,9 @@ import (
 	"gioui.org/widget/material"
 )
 
-func loop(w *app.Window) error {
+var configPath = flag.String("config", "config.json", "a configuration file")
+
+func loop(w *app.Window, requests *requestStorage) error {
 	var (
 		fetcher       service.Fetcher
 		fetchResponse chan string
@@ -37,18 +41,10 @@ func loop(w *app.Window) error {
 
 	th := material.NewTheme(gofont.Collection())
 
-	var requests requestStorage
-	r, err := readConfig()
-	if err == nil {
-		for _, rr := range r {
-			requests.add(rr.Method, rr.URL, rr.Name)
-		}
-	}
-
 	response := "Last response N/A"
 
 	appbar := mat.Appbar(th)
-	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(&requests))
+	home := view.Home(th, fetch, (*homeScreenRequestStorageAdaptor)(requests))
 
 	var ops op.Ops
 	for {
@@ -72,11 +68,45 @@ func loop(w *app.Window) error {
 }
 
 func main() {
+	flag.Parse()
 	rand.Seed(time.Now().UnixNano())
+
+	if *configPath == "" {
+		log.Fatalf("-config must be specified")
+	}
+
+	cfg, err := configFromFilepath(*configPath)
+	if err != nil && !os.IsNotExist(err) {
+		log.Fatalf("read config: %v", err)
+	}
+
+	requests := make(chan state.Requests)
+	go func() {
+		save := func(cfg *config) {
+			f, err := os.Create(*configPath)
+			if err != nil {
+				// TODO: Show error notification.
+				log.Printf("create config failed: %v", err)
+				return
+			}
+			defer f.Close()
+			cfg.save(f)
+			log.Printf("saved config to %q", *configPath)
+		}
+		for r := range requests {
+			cfg.setRequests(r)
+			save(&cfg)
+		}
+	}()
+
+	storage := requestStorage{
+		requests: cfg.requests(),
+		save:     func(r state.Requests) { requests <- r },
+	}
 
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(1000), unit.Dp(600)))
-		if err := loop(w); err != nil {
+		if err := loop(w, &storage); err != nil {
 			log.Fatal(err)
 		}
 		os.Exit(0)
@@ -87,10 +117,11 @@ func main() {
 // requestStorage and requestProviderAdaptor exist for demonstration purpose.
 type requestStorage struct {
 	requests state.Requests
+	save     func(state.Requests)
 }
 
 func (rs *requestStorage) add(m service.Method, url, name string) {
-	rs.requests = append(rs.requests, state.Request{
+	rs.addRequest(state.Request{
 		Method: m,
 		URL:    url,
 		Name:   name,
@@ -99,6 +130,7 @@ func (rs *requestStorage) add(m service.Method, url, name string) {
 
 func (rs *requestStorage) addRequest(r state.Request) {
 	rs.requests = append(rs.requests, r)
+	rs.save(rs.requests)
 }
 
 // homeScreenRequestStorageAdaptor and requestStorage exist for demonstration purpose.
