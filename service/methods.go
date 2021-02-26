@@ -12,14 +12,24 @@ const (
 	POST
 	DELETE
 	PUT
+	PATCH
+	OPTIONS
+	HEAD
+	TRACE
+	CONNECT
 )
 
 func (m Method) String() string {
 	return map[Method]string{
-		GET:    "GET",
-		POST:   "POST",
-		DELETE: "DELETE",
-		PUT:    "PUT",
+		GET:     "GET",
+		POST:    "POST",
+		DELETE:  "DELETE",
+		PUT:     "PUT",
+		PATCH:   "PATCH",
+		OPTIONS: "OPTIONS",
+		HEAD:    "HEAD",
+		TRACE:   "TRACE",
+		CONNECT: "CONNECT",
 	}[m]
 }
 
