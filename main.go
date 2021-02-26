@@ -38,8 +38,12 @@ func loop(w *app.Window) error {
 	th := material.NewTheme(gofont.Collection())
 
 	var requests requestStorage
-	requests.add(service.GET, "https://jsonplaceholder.typicode.com/todos/1", "jsonplaceholder")
-	requests.add(service.POST, "https://jsonplaceholder.typicode.com/comments/1", "/comments")
+	r, err := readConfig()
+	if err == nil {
+		for _, rr := range r {
+			requests.add(rr.Method, rr.URL, rr.Name)
+		}
+	}
 
 	response := "Last response N/A"
 
