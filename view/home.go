@@ -59,7 +59,7 @@ func (w *homeStyleState) setRequest(r state.Request) {
 
 type HomeStyle struct {
 	widgets *homeStyleState
-	home    *homeLayoutStyle
+	home    homeLayoutStyle
 	fetch   func(m service.Method, url string)
 	reqStor requestStorage
 }
@@ -123,10 +123,10 @@ type homeLayoutStyle struct {
 	minSZ *image.Point
 }
 
-func homeLayout(th *material.Theme, state *homeStyleState) *homeLayoutStyle {
+func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 	state.TabsGroup.Value = "body"
 
-	return &homeLayoutStyle{
+	return homeLayoutStyle{
 		loader: material.Loader(th),
 		resp:   mat.Input(th, new(widget.Editor), "Response N/A"),
 
