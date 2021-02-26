@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 
 	"gioman/service"
@@ -36,18 +37,26 @@ func main() {
 		log.Fatalf("read config: %v", err)
 	}
 
+	var wg sync.WaitGroup
+
 	requests := make(chan state.Requests)
+	wg.Add(1)
 	go func() {
+		defer func() {
+			log.Println("config: request update: done")
+			wg.Done()
+		}()
+		log.Println("config: request update: started")
 		save := func(cfg *config) {
 			f, err := os.Create(*configPath)
 			if err != nil {
 				// TODO: Show error notification.
-				log.Printf("create config failed: %v", err)
+				log.Printf("config: request update: save: create config: %v", err)
 				return
 			}
 			defer f.Close()
 			cfg.save(f)
-			log.Printf("saved config to %q", *configPath)
+			log.Printf("config: request update: save: written %q", *configPath)
 		}
 		for r := range requests {
 			cfg.setRequests(r)
@@ -65,6 +74,8 @@ func main() {
 		if err := loop(w, &storage); err != nil {
 			log.Fatal(err)
 		}
+		close(requests)
+		wg.Wait()
 		os.Exit(0)
 	}()
 	app.Main()
