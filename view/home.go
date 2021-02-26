@@ -5,9 +5,11 @@ import (
 	"gioman/service"
 	"gioman/state"
 	mat "gioman/widget/material"
+	"image"
 	"strings"
 
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -116,6 +118,8 @@ type homeLayoutStyle struct {
 	fetchStyle, saveStyle  material.ButtonStyle
 	headerStyle, bodyStyle mat.TabButtonStyle
 	list                   *layout.List
+
+	minSZ *image.Point
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
@@ -135,6 +139,8 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 		headerStyle: hs,
 		bodyStyle:   bs,
 		list:        &layout.List{Axis: layout.Vertical},
+
+		minSZ: new(image.Point),
 	}
 }
 
@@ -165,70 +171,57 @@ func (h homeLayoutStyle) Layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 }
 
 func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) layout.Dimensions {
-	enableIf := func(w layout.Widget, enable bool) layout.Widget {
-		return func(gtx layout.Context) layout.Dimensions {
-			if !enable {
-				gtx = gtx.Disabled()
-			}
-			return w(gtx)
-		}
-	}
 	methods := func(gtx layout.Context) layout.Dimensions {
 		return h.list.Layout(gtx, len(ctx.saved), func(gtx layout.Context, index int) layout.Dimensions {
 			return layout.UniformInset(unit.Dp(4)).Layout(gtx, ctx.saved[index].Layout)
 		})
 	}
-	inset := func(w layout.Widget) layout.Widget {
-		return func(gtx layout.Context) layout.Dimensions {
-			return layout.UniformInset(unit.Dp(4)).Layout(gtx, w)
-		}
-	}
-	inputs := func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-			layout.Rigid(inset(h.url.Layout)),
-			layout.Rigid(inset(h.name.Layout)),
-		)
-	}
-	buttons := func(gtx layout.Context) layout.Dimensions {
-		hasURL := len(strings.TrimSpace(h.url.Editor.Text())) > 0
-		hasName := len(strings.TrimSpace(h.name.Editor.Text())) > 0
-		return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceStart}.Layout(gtx,
-			layout.Rigid(enableIf(inset(h.fetchStyle.Layout), hasURL)),
-			layout.Rigid(enableIf(inset(h.saveStyle.Layout), hasName)),
-		)
-	}
 	if h.resp.Editor.Text() != ctx.response {
 		h.resp.Editor.SetText(ctx.response)
 	}
+	return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+		layout.Flexed(2, methods),
+		layout.Flexed(3, h.controlsLayout),
+		layout.Flexed(3, inset(h.resp.Layout)),
+	)
+}
 
-	tabs := func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{}.Layout(gtx,
-			layout.Rigid(inset(h.headerStyle.Layout)),
-			layout.Rigid(inset(h.bodyStyle.Layout)))
+func (h homeLayoutStyle) controlsLayout(gtx layout.Context) layout.Dimensions {
+	if *h.minSZ == image.ZP {
+		*h.minSZ = maxSize(gtx, h.saveStyle.Layout, h.fetchStyle.Layout)
 	}
-
-	controls := func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-			layout.Rigid(inputs),
-			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{Spacing: layout.SpaceBetween}.Layout(gtx,
-					layout.Rigid(tabs),
-					layout.Rigid(buttons),
-				)
-			}),
-		)
+	fetchButton := func(gtx layout.Context) layout.Dimensions {
+		hasURL := len(strings.TrimSpace(h.url.Editor.Text())) > 0
+		return disableIf(inset(h.fetchStyle.Layout), !hasURL)(gtx)
 	}
-
-	response := func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{}.Layout(gtx,
-			layout.Flexed(1, controls),
-			layout.Flexed(1, inset(h.resp.Layout)),
-		)
+	saveButton := func(gtx layout.Context) layout.Dimensions {
+		hasName := len(strings.TrimSpace(h.name.Editor.Text())) > 0
+		return disableIf(inset(h.saveStyle.Layout), !hasName)(gtx)
 	}
-
-	return layout.Flex{}.Layout(gtx,
-		layout.Flexed(1, methods),
-		layout.Flexed(3, response),
+	editAndButton := func(e mat.InputStyle, b layout.Widget) layout.Widget {
+		return func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
+				layout.Flexed(1, e.Layout),
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					gtx.Constraints.Min = *h.minSZ
+					return b(gtx)
+				}),
+			)
+		}
+	}
+	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+				layout.Rigid(editAndButton(h.url, fetchButton)),
+				layout.Rigid(editAndButton(h.name, saveButton)),
+			)
+		}),
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+				layout.Rigid(inset(h.headerStyle.Layout)),
+				layout.Rigid(inset(h.bodyStyle.Layout)),
+			)
+		}),
 	)
 }
 
@@ -239,4 +232,34 @@ func hasSubmitEvent(evts []widget.EditorEvent) bool {
 		}
 	}
 	return false
+}
+
+func inset(w layout.Widget) layout.Widget {
+	return func(gtx layout.Context) layout.Dimensions {
+		return layout.UniformInset(unit.Dp(4)).Layout(gtx, w)
+	}
+}
+
+func disableIf(w layout.Widget, disable bool) layout.Widget {
+	return func(gtx layout.Context) layout.Dimensions {
+		if disable {
+			gtx = gtx.Disabled()
+		}
+		return w(gtx)
+	}
+}
+
+func maxSize(gtx layout.Context, widgets ...layout.Widget) (max image.Point) {
+	gtx.Constraints.Min = image.ZP
+	defer op.Record(gtx.Ops).Stop()
+	for _, w := range widgets {
+		sz := w(gtx).Size
+		if sz.X > max.X {
+			max.X = sz.X
+		}
+		if sz.Y > max.Y {
+			max.Y = sz.Y
+		}
+	}
+	return
 }
