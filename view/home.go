@@ -24,12 +24,12 @@ type requestStorage interface {
 }
 
 type homeStyleState struct {
-	URL, Name    widget.Editor
-	Fetch, Save  widget.Clickable
-	Header, Body widget.Clickable
-	Items        []*widget.Clickable
-	ItemsLayout  []material.ButtonStyle // Cached Items buttons.
-	btnStyle     material.ButtonStyle   // To create new buttons only.
+	URL, Name   widget.Editor
+	Fetch, Save widget.Clickable
+	TabsGroup   widget.Enum
+	Items       []*widget.Clickable
+	ItemsLayout []material.ButtonStyle // Cached Items buttons.
+	btnStyle    material.ButtonStyle   // To create new buttons only.
 }
 
 func (w *homeStyleState) saveRequest(rs requestStorage) {
@@ -103,15 +103,6 @@ func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) la
 		}
 	}
 
-	if h.widgets.Body.Clicked() {
-		h.home.bodyStyle.Active = true
-		h.home.headerStyle.Active = false
-	}
-	if h.widgets.Header.Clicked() {
-		h.home.headerStyle.Active = true
-		h.home.bodyStyle.Active = false
-	}
-
 	return h.home.Layout(gtx, homeLayoutStyleContext{
 		fetching: fetching,
 		response: response,
@@ -133,9 +124,7 @@ type homeLayoutStyle struct {
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) *homeLayoutStyle {
-	bs := mat.TabButton(th, &state.Body, "Body")
-	hs := mat.TabButton(th, &state.Header, "Header")
-	bs.Active = true
+	state.TabsGroup.Value = "body"
 
 	return &homeLayoutStyle{
 		loader: material.Loader(th),
@@ -146,8 +135,8 @@ func homeLayout(th *material.Theme, state *homeStyleState) *homeLayoutStyle {
 
 		fetchStyle:  material.Button(th, &state.Fetch, "Fetch"),
 		saveStyle:   material.Button(th, &state.Save, "Save"),
-		headerStyle: hs,
-		bodyStyle:   bs,
+		headerStyle: mat.TabButton(th, &state.TabsGroup, "header", "Header"),
+		bodyStyle:   mat.TabButton(th, &state.TabsGroup, "body", "Body"),
 		list:        &layout.List{Axis: layout.Vertical},
 
 		minSZ: new(image.Point),
