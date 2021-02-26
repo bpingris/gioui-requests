@@ -13,12 +13,12 @@ import (
 
 type (
 	config struct {
-		Requests []requestConfig `json: 'requests'`
+		Requests []requestConfig `json:"requests,omitempty"`
 	}
 	requestConfig struct {
-		Name   string `json: "name"`
-		URL    string `json: "url"`
-		Method string `json: "method"`
+		Name   string `json:"name,omitempty"`
+		URL    string `json:"url,omitempty"`
+		Method string `json:"method,omitempty"`
 	}
 )
 
