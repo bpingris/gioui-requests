@@ -87,13 +87,13 @@ func loop(w *app.Window, requests *requestStorage) error {
 		fetchResponse chan string
 	)
 
-	fetch := func(m service.Method, url string) {
+	fetch := func(p service.FetchPayload) {
 		fetchResponse = make(chan string, 1)
 		// Ensure closure has its own reference. We need this to guarantee
 		// the buffer of size 1 will be used once and only once.
 		fetchResponse := fetchResponse
 		go func() {
-			fetchResponse <- fetcher.Fetch(m, url)
+			fetchResponse <- fetcher.Fetch(p)
 		}()
 	}
 

@@ -45,11 +45,14 @@ func (m Method) String() string {
 	}[m]
 }
 
-func (m Method) Request(url string) (string, error) {
+func (m Method) Request(url string, headers Headers) (string, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(m.String(), url, nil)
 	if err != nil {
 		return "", err
+	}
+	for _, h := range headers {
+		req.Header.Add(h.Key, h.Value)
 	}
 	res, err := c.Do(req)
 	if err != nil {

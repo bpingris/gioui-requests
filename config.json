@@ -3,12 +3,36 @@
     {
       "name": "All todos",
       "url": "https://jsonplaceholder.typicode.com/todos",
-      "method": "GET"
+      "method": "GET",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ]
     },
     {
       "name": "Get todo #1",
       "url": "https://jsonplaceholder.typicode.com/todos/1",
-      "method": "GET"
+      "method": "GET",
+      "headers": null
+    },
+    {
+      "name": "Get todo #1",
+      "url": "https://jsonplaceholder.typicode.com/todos/1",
+      "method": "GET",
+      "headers": null
+    },
+    {
+      "name": "All todos",
+      "url": "https://jsonplaceholder.typicode.com/todos",
+      "method": "GET",
+      "headers": [
+        {
+          "key": "qwe",
+          "value": ""
+        }
+      ]
     }
   ]
 }

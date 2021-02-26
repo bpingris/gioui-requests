@@ -23,20 +23,31 @@ type requestStorage interface {
 	At(index int) state.Request
 }
 
+type headerInput struct {
+	key, value widget.Editor
+}
+
 type homeStyleState struct {
-	URL, Name   widget.Editor
-	Fetch, Save widget.Clickable
-	TabsGroup   widget.Enum
-	Items       []*widget.Clickable
-	ItemsLayout []material.ButtonStyle // Cached Items buttons.
-	btnStyle    material.ButtonStyle   // To create new buttons only.
+	URL, Name    widget.Editor
+	Fetch, Save  widget.Clickable
+	TabsGroup    widget.Enum
+	Items        []*widget.Clickable
+	ItemsLayout  []material.ButtonStyle // Cached Items buttons.
+	btnStyle     material.ButtonStyle   // To create new buttons only.
+	addHeader    widget.Clickable
+	headerInputs []headerInput
 }
 
 func (w *homeStyleState) saveRequest(rs requestStorage) {
+	var headers []state.Header
+	for _, h := range w.headerInputs {
+		headers = append(headers, state.Header{Value: h.value.Text(), Key: h.key.Text()})
+	}
 	r := state.Request{
-		Method: service.GET, // TODO: Change this.
-		URL:    w.URL.Text(),
-		Name:   w.Name.Text(),
+		Method:  service.GET, // TODO: Change this.
+		URL:     w.URL.Text(),
+		Name:    w.Name.Text(),
+		Headers: headers,
 	}
 	rs.Save(r)
 	w.addSavedRequestButton(r)
@@ -55,16 +66,20 @@ func (w *homeStyleState) addSavedRequestButton(r state.Request) {
 func (w *homeStyleState) setRequest(r state.Request) {
 	w.URL.SetText(r.URL)
 	w.Name.SetText(r.Name)
+	for i, r := range r.Headers {
+		w.headerInputs[i].key.SetText(r.Key)
+		w.headerInputs[i].value.SetText(r.Value)
+	}
 }
 
 type HomeStyle struct {
 	widgets *homeStyleState
 	home    homeLayoutStyle
-	fetch   func(m service.Method, url string)
+	fetch   func(service.FetchPayload)
 	reqStor requestStorage
 }
 
-func Home(th *material.Theme, fetch func(m service.Method, url string), rs requestStorage) HomeStyle {
+func Home(th *material.Theme, fetch func(service.FetchPayload), rs requestStorage) HomeStyle {
 	widgets := &homeStyleState{
 		URL: widget.Editor{
 			SingleLine: true,
@@ -74,7 +89,8 @@ func Home(th *material.Theme, fetch func(m service.Method, url string), rs reque
 			SingleLine: true,
 			Submit:     true,
 		},
-		btnStyle: material.Button(th, nil, ""), // Store as a style only.
+		btnStyle:     material.Button(th, nil, ""), // Store as a style only.
+		headerInputs: make([]headerInput, 1),
 	}
 	if all := rs.All(); len(all) > 0 {
 		widgets.setRequest(all[0])
@@ -92,7 +108,11 @@ func Home(th *material.Theme, fetch func(m service.Method, url string), rs reque
 
 func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) layout.Dimensions {
 	if hasSubmitEvent(h.widgets.URL.Events()) || h.widgets.Fetch.Clicked() {
-		h.fetch(service.GET, h.widgets.URL.Text())
+		var headers service.Headers
+		for _, hh := range h.widgets.headerInputs {
+			headers = append(headers, service.Header{Key: hh.key.Text(), Value: hh.value.Text()})
+		}
+		h.fetch(service.FetchPayload{URL: h.widgets.URL.Text(), Method: service.GET, Headers: headers})
 	}
 	if hasSubmitEvent(h.widgets.Name.Events()) || h.widgets.Save.Clicked() {
 		h.widgets.saveRequest(h.reqStor)
@@ -103,6 +123,9 @@ func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) la
 		}
 	}
 
+	if h.widgets.addHeader.Clicked() {
+	}
+
 	return h.home.Layout(gtx, homeLayoutStyleContext{
 		fetching: fetching,
 		response: response,
@@ -111,6 +134,7 @@ func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) la
 }
 
 type homeLayoutStyle struct {
+	state  *homeStyleState
 	loader material.LoaderStyle
 	resp   mat.InputStyle
 
@@ -121,12 +145,33 @@ type homeLayoutStyle struct {
 	list                   *layout.List
 
 	minSZ *image.Point
+
+	headerTab headerTabView
+	// headers []
+}
+
+type inputKeyValue struct {
+	header mat.InputStyle
+	value  mat.InputStyle
+}
+
+type headerTabView struct {
+	fields []inputKeyValue
+	add    material.ButtonStyle
 }
 
 func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 	state.TabsGroup.Value = "body"
+	bodyFields := make([]inputKeyValue, 1)
+	for i := range bodyFields {
+		bodyFields[i] = inputKeyValue{
+			header: mat.Input(th, &state.headerInputs[i].key, "header"),
+			value:  mat.Input(th, &state.headerInputs[i].value, "value"),
+		}
+	}
 
 	return homeLayoutStyle{
+		state:  state,
 		loader: material.Loader(th),
 		resp:   mat.Input(th, new(widget.Editor), "Response N/A"),
 
@@ -140,7 +185,10 @@ func homeLayout(th *material.Theme, state *homeStyleState) homeLayoutStyle {
 		list:        &layout.List{Axis: layout.Vertical},
 
 		minSZ: new(image.Point),
-	}
+		headerTab: headerTabView{
+			fields: bodyFields,
+			add:    material.Button(th, &state.addHeader, "Add"),
+		}}
 }
 
 type homeLayoutStyleContext struct {
@@ -184,6 +232,32 @@ func (h homeLayoutStyle) layout(gtx layout.Context, ctx homeLayoutStyleContext) 
 		layout.Flexed(3, inset(h.resp.Layout)),
 	)
 }
+func (h homeLayoutStyle) bodyTabLayout(gtx layout.Context) layout.Dimensions {
+	return layout.Dimensions{}
+}
+func (h homeLayoutStyle) headerTabLayout(gtx layout.Context) layout.Dimensions {
+	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			l := &layout.List{Axis: layout.Vertical}
+			return l.Layout(gtx, len(h.headerTab.fields), func(gtx layout.Context, index int) layout.Dimensions {
+				return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+					layout.Flexed(1, inset(h.headerTab.fields[index].header.Layout)),
+					layout.Flexed(1, inset(h.headerTab.fields[index].value.Layout)),
+				)
+			})
+		}),
+		layout.Rigid(inset(h.headerTab.add.Layout)))
+}
+
+func (h homeLayoutStyle) tabContentLayout(gtx layout.Context) layout.Dimensions {
+	switch h.state.TabsGroup.Value {
+	case "body":
+		return h.bodyTabLayout(gtx)
+	case "header":
+		return h.headerTabLayout(gtx)
+	}
+	return layout.Dimensions{}
+}
 
 func (h homeLayoutStyle) controlsLayout(gtx layout.Context) layout.Dimensions {
 	if *h.minSZ == image.ZP {
@@ -221,6 +295,7 @@ func (h homeLayoutStyle) controlsLayout(gtx layout.Context) layout.Dimensions {
 				layout.Rigid(inset(h.headerStyle.Layout)),
 			)
 		}),
+		layout.Rigid(h.tabContentLayout),
 	)
 }
 

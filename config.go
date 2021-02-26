@@ -16,9 +16,10 @@ type (
 		Requests []requestConfig `json:"requests,omitempty"`
 	}
 	requestConfig struct {
-		Name   string `json:"name,omitempty"`
-		URL    string `json:"url,omitempty"`
-		Method string `json:"method,omitempty"`
+		Name    string         `json:"name,omitempty"`
+		URL     string         `json:"url,omitempty"`
+		Method  string         `json:"method,omitempty"`
+		Headers []state.Header `json:"headers"`
 	}
 )
 
@@ -45,9 +46,10 @@ func (cfg *config) setRequests(requests []state.Request) {
 	cfg.Requests = cfg.Requests[:0]
 	for _, r := range requests {
 		cfg.Requests = append(cfg.Requests, requestConfig{
-			Name:   r.Name,
-			URL:    r.URL,
-			Method: r.Method.String(),
+			Name:    r.Name,
+			URL:     r.URL,
+			Method:  r.Method.String(),
+			Headers: r.Headers,
 		})
 	}
 }
@@ -60,9 +62,10 @@ func (cfg *config) requests() (requests []state.Request) {
 			log.Printf("requests: stored request %q: unknown method %q, assuming %q", r.Name, r.Method, method)
 		}
 		requests = append(requests, state.Request{
-			Name:   r.Name,
-			URL:    r.URL,
-			Method: method,
+			Name:    r.Name,
+			URL:     r.URL,
+			Method:  method,
+			Headers: r.Headers,
 		})
 	}
 	return
