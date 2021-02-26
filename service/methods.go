@@ -19,6 +19,18 @@ const (
 	CONNECT
 )
 
+var Methods = map[string]Method{
+	"GET":     GET,
+	"POST":    POST,
+	"DELETE":  DELETE,
+	"PUT":     PUT,
+	"PATCH":   PATCH,
+	"OPTIONS": OPTIONS,
+	"HEAD":    HEAD,
+	"TRACE":   TRACE,
+	"CONNECT": CONNECT,
+}
+
 func (m Method) String() string {
 	return map[Method]string{
 		GET:     "GET",
