@@ -1,14 +1,14 @@
 {
-  "Requests": [
+  "requests": [
     {
-      "Name": "All todos",
-      "URL": "https://jsonplaceholder.typicode.com/todos",
-      "Method": "GET"
+      "name": "All todos",
+      "url": "https://jsonplaceholder.typicode.com/todos",
+      "method": "GET"
     },
     {
-      "Name": "Get todo #1",
-      "URL": "https://jsonplaceholder.typicode.com/todos/1",
-      "Method": "GET"
+      "name": "Get todo #1",
+      "url": "https://jsonplaceholder.typicode.com/todos/1",
+      "method": "GET"
     }
   ]
 }
