@@ -11,15 +11,6 @@ import (
 	"gioman/state"
 )
 
-// [
-//     {
-//         name: 'qeweqqw',
-//         url: 'weqweqweqwe',
-//         method: 0
-//     }
-// ]
-// TODO: Need to validate the config, if `method: 921`, it's not valid
-
 type (
 	config struct {
 		Requests []requestConfig `json: 'requests'`
