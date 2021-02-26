@@ -56,7 +56,8 @@ func (cfg *config) requests() (requests []state.Request) {
 	for _, r := range cfg.Requests {
 		method, ok := service.Methods[strings.ToUpper(r.Method)]
 		if !ok {
-			log.Printf("requests: unknown method %q", method)
+			method = service.GET
+			log.Printf("requests: stored request %q: unknown method %q, assuming %q", r.Name, r.Method, method)
 		}
 		requests = append(requests, state.Request{
 			Name:   r.Name,
