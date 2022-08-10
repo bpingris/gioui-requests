@@ -37,7 +37,7 @@ func (t TabButtonStyle) layout(gtx layout.Context, checked, hovered bool) layout
 			return layout.Dimensions{Size: gtx.Constraints.Min}
 		}),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			dims := layout.UniformInset(unit.Sp(10)).Layout(gtx, t.label.Layout)
+			dims := layout.UniformInset(unit.Dp(10)).Layout(gtx, t.label.Layout)
 			tabWidth = dims.Size.X
 			return dims
 		}),
@@ -45,7 +45,7 @@ func (t TabButtonStyle) layout(gtx layout.Context, checked, hovered bool) layout
 			if !checked {
 				return layout.Dimensions{}
 			}
-			tabHeight := gtx.Px(unit.Dp(4))
+			tabHeight := gtx.Dp(unit.Dp(4))
 			tabRect := image.Rect(0, 0, tabWidth, tabHeight)
 			paint.FillShape(gtx.Ops, t.tabcolor, clip.Rect(tabRect).Op())
 			return layout.Dimensions{
@@ -56,9 +56,13 @@ func (t TabButtonStyle) layout(gtx layout.Context, checked, hovered bool) layout
 }
 
 func (t TabButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
-	dims := t.layout(gtx, t.group.Value == t.key, t.group.Hovered == t.key)
-	gtx.Constraints.Min = dims.Size
-	return t.group.Layout(gtx, t.key)
+	hovered, hovering := t.group.Hovered()
+	focus, focused := t.group.Focused()
+	return t.group.Layout(gtx, t.key, func(gtx layout.Context) layout.Dimensions {
+		selekt := t.group.Value == t.key
+		highlight := hovering && hovered == t.key || focused && focus == t.key
+		return t.layout(gtx, selekt, highlight)
+	})
 	// var tabWidth int
 	// return layout.Stack{Alignment: layout.SW}.Layout(gtx,
 	// 	layout.Stacked(func(gtx layout.Context) layout.Dimensions {
