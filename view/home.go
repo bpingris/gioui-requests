@@ -110,6 +110,9 @@ func (h HomeStyle) Layout(gtx layout.Context, fetching bool, response string) la
 	if hasSubmitEvent(h.widgets.URL.Events()) || h.widgets.Fetch.Clicked() {
 		var headers service.Headers
 		for _, hh := range h.widgets.headerInputs {
+			if strings.TrimSpace(hh.key.Text()) == "" { // Ignore headers with empty keys.
+				continue
+			}
 			headers = append(headers, service.Header{Key: hh.key.Text(), Value: hh.value.Text()})
 		}
 		h.fetch(service.FetchPayload{URL: h.widgets.URL.Text(), Method: service.GET, Headers: headers})
